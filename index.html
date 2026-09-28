@@ -49,13 +49,13 @@
             user-select: none;
         }
 
-        /* Access Restriction Overlay */
+        /* Access Restriction Overlay Popup */
         #telegramOnlyOverlay {
-            display: none;
+            display: flex;
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(15, 15, 15, 0.95);
-            backdrop-filter: blur(8px);
+            background: rgba(15, 15, 15, 0.98);
+            backdrop-filter: blur(10px);
             z-index: 9999;
             flex-direction: column;
             justify-content: center;
@@ -233,7 +233,7 @@
         /* Photo Gallery Layout */
         .gallery-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
             gap: 12px;
         }
 
@@ -246,7 +246,7 @@
 
         .gallery-card img {
             width: 100%;
-            height: 160px;
+            height: 150px;
             object-fit: cover;
             display: block;
         }
@@ -327,7 +327,7 @@
             cursor: pointer;
         }
 
-        /* 💬 Chat Section Styles */
+        /* Chat Section Styles */
         .chat-container {
             display: flex;
             flex-direction: column;
@@ -420,7 +420,7 @@
 </head>
 <body>
 
-    <!-- First-time Join Overlay Prompt -->
+    <!-- Access Restriction Overlay Prompt -->
     <div id="telegramOnlyOverlay">
         <i class="fa-brands fa-telegram"></i>
         <h2>كىنو قانىلىمىزغا ئەزا بولۇڭ</h2>
@@ -463,12 +463,12 @@
         <!-- 2. Search View -->
         <div id="searchView" class="app-view">
             <div class="form-group">
-                <input type="text" id="searchInput" class="form-control" placeholder="كىنو ئىسمىنى ئىزدەڭ..." onkeyup="handleSearch()">
+                <input type="text" id="searchInput" class="form-control" placeholder="كىنو ئىسمىنى ئىزدەڭ..." oninput="handleSearch()">
             </div>
             <div class="movie-grid" id="searchMovieList"></div>
         </div>
 
-        <!-- 3. Photos Gallery View (🖼️ يېڭى رەسىملەر بۆلىكى) -->
+        <!-- 3. Photos Gallery View -->
         <div id="galleryView" class="app-view">
             <div class="section-header">
                 <span><i class="fa-solid fa-images"></i> رەسىملەر ئامبىرى</span>
@@ -508,7 +508,6 @@
                     <label>Archive.org ئۇلانمىسى</label>
                     <input type="url" id="movieArchiveUrl" class="form-control" placeholder="https://archive.org/details/..." required>
                 </div>
-                <!-- 👑 VIP / Free Selection -->
                 <div class="form-group">
                     <label>فىلىم تۈرى</label>
                     <select id="movieType" class="form-control">
@@ -519,13 +518,12 @@
                 <button type="submit" class="btn-submit"><i class="fa-solid fa-plus"></i> فىلىم ئېلان قىلىش</button>
             </form>
 
-            <!-- 🖼️ Admin Photo Upload Form -->
             <div class="section-header" style="margin-top: 25px;">
                 <span><i class="fa-solid fa-image"></i> يېڭى رەسىم يوللاش</span>
             </div>
             <form id="addPhotoForm" onsubmit="savePhoto(event)">
                 <div class="form-group">
-                    <label>رەسىم ماۋزۇسى (تېما)</label>
+                    <label>رەسىم ماۋزۇسى</label>
                     <input type="text" id="photoTitle" class="form-control" placeholder="تېما..." required>
                 </div>
                 <div class="form-group">
@@ -613,7 +611,7 @@
             // ئابونتلارنى دەرھال تىزىملاش
             autoRegisterUser(currentUser);
 
-            // بىرىنچى قېتىم كىرگەنلىكىنى تەكشۈرۈش
+            // ⚡ قانالغا ئەزا بولۇش ئەسكەرتىشىنى دەرھال چىقىرىش
             const hasSeenPrompt = localStorage.getItem(`seen_channel_prompt_${currentUser.id}`);
             if (!hasSeenPrompt) {
                 document.getElementById('telegramOnlyOverlay').style.display = 'flex';
@@ -820,6 +818,7 @@
                 { id: 1, title: "ئۇيغۇر كىنو سۇپىسى", url: "https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?auto=format&fit=crop&w=400&q=80" }
             ];
             const container = document.getElementById('galleryContainer');
+            if(!container) return;
             container.innerHTML = '';
 
             photos.forEach(p => {
@@ -861,6 +860,7 @@
             if(navElement) navElement.classList.add('active');
 
             if(viewId === 'homeView') renderHomeMovies();
+            if(viewId === 'searchView') handleSearch();
             if(viewId === 'galleryView') renderGallery();
             if(viewId === 'adminView') renderAdminUserList();
             if(viewId === 'chatView') renderChatMessages();
@@ -987,8 +987,9 @@
             modal.style.display = 'none';
         }
 
+        /* 🔎 Fixed Search Handler */
         function handleSearch() {
-            const query = document.getElementById('searchInput').value.toLowerCase();
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
             const movies = getMovies();
             const filtered = movies.filter(m => m.title.toLowerCase().includes(query));
             
@@ -999,7 +1000,13 @@
                 const card = document.createElement('div');
                 card.className = 'movie-card';
                 card.onclick = () => playMovie(movie.title, movie.archiveUrl, movie.type);
+                
+                const badge = movie.type === 'vip' 
+                    ? `<div class="movie-badge-vip">👑 VIP</div>` 
+                    : `<div class="movie-badge-free">ھەقسىز</div>`;
+
                 card.innerHTML = `
+                    ${badge}
                     <img src="${movie.poster}" alt="${movie.title}">
                     <div class="movie-card-info">
                         <div class="movie-card-title">${movie.title}</div>
