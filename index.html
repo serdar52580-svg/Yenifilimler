@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     
-    <!-- Cache Buster Meta Tags (دەرھال يېڭىلىنىش ئۈچۈن) -->
+    <!-- Cache Buster Meta Tags -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -379,7 +379,7 @@
             <div class="section-header" style="margin-top: 25px;">
                 <span><i class="fa-solid fa-users"></i> كىرگەن ئابونتلار (<span id="userCount">0</span>)</span>
             </div>
-            <p style="font-size:11px; color:var(--text-muted); margin-bottom:8px;">* ئابونتنى باسسىڭىز ئۇنىڭ بىلەن پاراڭلىشىش چاتى ئېچىلىدۇ</p>
+            <p style="font-size:11px; color:var(--text-muted); margin-bottom:8px;">* ئابونتنى باسسىڭىز ئۇنىڭ Profile كۆزنىكى ئېچىلىدۇ</p>
             <div class="users-list" id="registeredUsersContainer"></div>
         </div>
 
@@ -527,7 +527,7 @@
             });
         }
 
-        // 🌟 باشقۇرغۇچى پانيېلىدا ئابونتنى باسسا ئۇنىڭ بىلەن پاراڭلىشىش ئېكرانى ئېچىلىش
+        // باشقۇرغۇچى پانيېلىدا ئابونتنى باسسا Profile كۆزنىكى ئېچىلىدۇ
         function renderAdminUserList() {
             const users = JSON.parse(localStorage.getItem('uyghur_tg_users')) || [];
             const container = document.getElementById('registeredUsersContainer');
@@ -543,7 +543,7 @@
                 const item = document.createElement('div');
                 item.className = 'user-item-card';
                 
-                // ئابونتنى باسقاندا Telegram چاتىنى ئېچىش
+                // ئابونتنى باسقاندا Profile كۆزنىكىنى ئېچىش
                 item.onclick = () => openUserChat(u);
 
                 const avatarHtml = u.photo_url 
@@ -560,18 +560,18 @@
                         <small>كەلگەن ۋاقتى: ${u.date}</small>
                     </div>
                     <div style="color:#40c4ff; font-size:16px;">
-                        <i class="fa-regular fa-comment-dots"></i>
+                        <i class="fa-solid fa-circle-info"></i>
                     </div>
                 `;
                 container.appendChild(item);
             });
         }
 
-        // Telegram چاتىنى ئېچىش ئىقتىدارى
+        // Telegram Profile كۆزنىكىنى ئېچىش
         function openUserChat(user) {
             if (user.username && user.username !== '') {
                 tg.openTelegramLink(`https://t.me/${user.username}`);
-            } else {
+            } else if (user.id) {
                 tg.openTelegramLink(`https://t.me/user?id=${user.id}`);
             }
         }
