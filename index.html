@@ -89,7 +89,7 @@
             gap: 8px;
         }
 
-        /* User Profile Display Banner */
+        /* User Profile Display Banner (Only Name & Avatar) */
         .user-card {
             background: linear-gradient(135deg, #2c2c2e, #1c1c1e);
             padding: 12px;
@@ -122,8 +122,7 @@
             font-weight: bold;
         }
 
-        .user-details h4 { font-size: 14px; margin-bottom: 2px; }
-        .user-details p { font-size: 11px; color: var(--text-muted); }
+        .user-details h4 { font-size: 15px; font-weight: 700; }
 
         /* Views System */
         .app-view {
@@ -207,7 +206,7 @@
             margin-top: 10px;
         }
 
-        /* Detailed User Item in Admin */
+        /* Clickable User Item in Admin Panel */
         .users-list {
             background: var(--card-bg);
             border-radius: var(--radius);
@@ -223,6 +222,13 @@
             gap: 12px;
             padding: 10px;
             border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: background 0.2s;
+            border-radius: 8px;
+        }
+
+        .user-item-card:hover, .user-item-card:active {
+            background: #2c2c2e;
         }
 
         .user-item-card:last-child { border-bottom: none; }
@@ -326,12 +332,11 @@
 
         <!-- 1. Home View -->
         <div id="homeView" class="app-view active">
-            <!-- Current User Profile Display -->
+            <!-- Current User Profile Display (Only Name & Avatar) -->
             <div class="user-card" id="userProfileCard">
                 <div id="uAvatarContainer"></div>
                 <div class="user-details">
                     <h4 id="uName">ئىشلەتكۈچى</h4>
-                    <p id="uTgId">ID: --</p>
                 </div>
             </div>
 
@@ -374,6 +379,7 @@
             <div class="section-header" style="margin-top: 25px;">
                 <span><i class="fa-solid fa-users"></i> كىرگەن ئابونتلار (<span id="userCount">0</span>)</span>
             </div>
+            <p style="font-size:11px; color:var(--text-muted); margin-bottom:8px;">* ئابونتنى باسسىڭىز ئۇنىڭ بىلەن پاراڭلىشىش چاتى ئېچىلىدۇ</p>
             <div class="users-list" id="registeredUsersContainer"></div>
         </div>
 
@@ -424,13 +430,12 @@
 
             currentUser = tg.initDataUnsafe.user;
 
-            // ⚡ ئابونت كىرگەن ھامان ئاپتوماتىك باش رەسىمى، ئىسمى، ID لىرىنى دەرھال ساقلاش
+            // ئابونت كىرگەن ھامان ئاپتوماتىك تەپسىلاتلىرىنى ساقلاش
             autoRegisterUser(currentUser);
 
-            // ئاساسىي كۆرۈنمىدە ئابونت ئۆز ئۇچۇرىنى كۆرىدۇ
+            // ئاساسىي كۆرۈنمىدە پەقەت ئىسمى ۋە رەسىمىلا كۆرۈنىدۇ (ID يوشۇرۇلدى)
             const fullName = `${currentUser.first_name || ''} ${currentUser.last_name || ''}`.trim();
             document.getElementById('uName').innerText = fullName || 'ئىشلەتكۈچى';
-            document.getElementById('uTgId').innerText = `@${currentUser.username || 'نامسىز'} | ID: ${currentUser.id}`;
             
             const avatarBox = document.getElementById('uAvatarContainer');
             if (currentUser.photo_url) {
@@ -439,7 +444,7 @@
                 avatarBox.innerHTML = `<div class="user-avatar-placeholder">${(currentUser.first_name || 'U').charAt(0).toUpperCase()}</div>`;
             }
 
-            // پەقەت سىز كىرگەندىلا باشقۇرۇش كۇنپىكى ئېچىلىدۇ
+            // پەقەت باشقۇرغۇچىگىلا Menyus ئېچىلىدۇ
             if (String(currentUser.id) === String(ADMIN_TELEGRAM_ID)) {
                 document.getElementById('adminNavItem').style.display = 'flex';
             }
@@ -447,7 +452,7 @@
             renderHomeMovies();
         }
 
-        // ⚡ ئابونتلارنىڭ باش رەسىمى (Photo URL)، ئىسمى، ID سىنى دەرھال ساقلاش
+        // ئابونتلارنىڭ تەپسىلىي ئۇچۇرلىرىنى ساقلاش
         function autoRegisterUser(user) {
             let users = JSON.parse(localStorage.getItem('uyghur_tg_users')) || [];
             const existingIndex = users.findIndex(u => String(u.id) === String(user.id));
@@ -458,8 +463,8 @@
             const userDataObj = {
                 id: user.id,
                 name: `${user.first_name || ''} ${user.last_name || ''}`.trim(),
-                username: user.username ? `@${user.username}` : 'يوق',
-                photo_url: user.photo_url || null, // باش رەسىمى URL
+                username: user.username ? user.username : '',
+                photo_url: user.photo_url || null,
                 date: timeFormatted
             };
 
@@ -522,7 +527,7 @@
             });
         }
 
-        // 🌟 باشقۇرغۇچى پانيېلىدا ئابونتلارنىڭ باش رەسىمى ۋە تەپشىلى ئۇچۇرلىرىنى كۆرسىتىش
+        // 🌟 باشقۇرغۇچى پانيېلىدا ئابونتنى باسسا ئۇنىڭ بىلەن پاراڭلىشىش ئېكرانى ئېچىلىش
         function renderAdminUserList() {
             const users = JSON.parse(localStorage.getItem('uyghur_tg_users')) || [];
             const container = document.getElementById('registeredUsersContainer');
@@ -537,24 +542,38 @@
             users.forEach(u => {
                 const item = document.createElement('div');
                 item.className = 'user-item-card';
+                
+                // ئابونتنى باسقاندا Telegram چاتىنى ئېچىش
+                item.onclick = () => openUserChat(u);
 
                 const avatarHtml = u.photo_url 
                     ? `<img src="${u.photo_url}" class="user-item-avatar">` 
                     : `<div class="user-item-placeholder">${(u.name || 'U').charAt(0).toUpperCase()}</div>`;
 
+                const displayUsername = u.username ? `@${u.username}` : 'Username يوق';
+
                 item.innerHTML = `
                     ${avatarHtml}
                     <div class="user-item-info">
                         <strong>${u.name}</strong>
-                        <span>${u.username}</span>
+                        <span>${displayUsername}</span>
                         <small>كەلگەن ۋاقتى: ${u.date}</small>
                     </div>
-                    <div style="color:var(--primary-color); font-weight:bold; font-size:11px;">
-                        ID: ${u.id}
+                    <div style="color:#40c4ff; font-size:16px;">
+                        <i class="fa-regular fa-comment-dots"></i>
                     </div>
                 `;
                 container.appendChild(item);
             });
+        }
+
+        // Telegram چاتىنى ئېچىش ئىقتىدارى
+        function openUserChat(user) {
+            if (user.username && user.username !== '') {
+                tg.openTelegramLink(`https://t.me/${user.username}`);
+            } else {
+                tg.openTelegramLink(`https://t.me/user?id=${user.id}`);
+            }
         }
 
         function saveMovie(e) {
