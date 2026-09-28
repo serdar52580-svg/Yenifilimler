@@ -373,7 +373,7 @@
 
             <!-- Registered Users Section for Admin -->
             <div class="section-header" style="margin-top: 25px;">
-                <span><i class="fa-solid fa-users"></i> كىرگەن ئىشلەتكۈچىلەر (Telegram)</span>
+                <span><i class="fa-solid fa-users"></i> كىرگەن ئىشلەتكۈچىلەر (<span id="userCount">0</span>)</span>
             </div>
             <div class="users-list" id="registeredUsersContainer">
                 <!-- User list will be populated here -->
@@ -408,17 +408,15 @@
     </div>
 
     <script>
-        // ----------------------------------------------------
-        // 🔑 باشقۇرغۇچى Telegram ID نومۇرىڭىز بېكىتىلدى
-        // ----------------------------------------------------
+        // 🔑 باشقۇرغۇچى Telegram ID نومۇرىڭىز
         const ADMIN_TELEGRAM_ID = "8739045571"; 
 
         const tg = window.Telegram?.WebApp;
         let currentUser = null;
 
-        // Verify Telegram Environment & Init
+        // App ئېچىلغاندا ئىشلەيدىغان ئاساسىي ئىقتىدار
         function initApp() {
-            // 1. Check if opened inside Telegram Mini App
+            // 1. Telegram Mini App ئىچىدە ئېچىلغانلىقىنى دەلەللەش
             if (!tg || !tg.initDataUnsafe || !tg.initDataUnsafe.user) {
                 document.getElementById('telegramOnlyOverlay').style.display = 'flex';
                 document.getElementById('appContainer').style.display = 'none';
@@ -430,16 +428,16 @@
 
             currentUser = tg.initDataUnsafe.user;
 
-            // Render User Header UI
+            // 2. ئابونت كىرگەن ھامان ئاپتوماتىك دەرھال تىزىملاش (Auto Register)
+            autoRegisterUser(currentUser);
+
+            // UI دا ئابونت ئۇچۇرىنى كۆرسىتىش
             const fullName = `${currentUser.first_name || ''} ${currentUser.last_name || ''}`.trim();
             document.getElementById('uName').innerText = fullName || 'ئىشلەتكۈچى';
             document.getElementById('uTgId').innerText = `@${currentUser.username || 'نامسىز'} | ID: ${currentUser.id}`;
             document.getElementById('uAvatar').innerText = (currentUser.first_name || 'U').charAt(0).toUpperCase();
 
-            // Store User Info in LocalStorage DB
-            saveUserData(currentUser);
-
-            // 2. Check Admin Privilege (Show Admin View ONLY for your Telegram ID)
+            // 3. پەقەت سىزنىڭ ID (8739045571) بىلەن كىرگەندىلا باشقۇرۇش كۇنپىكىنى كۆرسىتىش
             if (String(currentUser.id) === String(ADMIN_TELEGRAM_ID)) {
                 document.getElementById('adminNavItem').style.display = 'flex';
             }
@@ -447,22 +445,27 @@
             renderHomeMovies();
         }
 
-        // Save User Data to DB
-        function saveUserData(user) {
+        // ⚡ ئابونتلارنى كىرگەن ھامان ئاپتوماتىك ساقلاش ئىقتىدارى
+        function autoRegisterUser(user) {
             let users = JSON.parse(localStorage.getItem('uyghur_tg_users')) || [];
             const existingIndex = users.findIndex(u => String(u.id) === String(user.id));
+
+            const now = new Date();
+            const timeFormatted = now.toLocaleDateString('ug') + ' ' + now.toLocaleTimeString('ug', {hour: '2-digit', minute:'2-digit'});
 
             const userDataObj = {
                 id: user.id,
                 name: `${user.first_name || ''} ${user.last_name || ''}`.trim(),
                 username: user.username ? `@${user.username}` : 'يوق',
-                date: new Date().toLocaleString('ug')
+                date: timeFormatted
             };
 
             if (existingIndex > -1) {
+                // ئابونت ئىلگىرى كىرگەن بولسا ۋاقتىنى يېڭىلايدۇ
                 users[existingIndex] = userDataObj;
             } else {
-                users.push(userDataObj);
+                // يېڭى ئئابونت كىرگەن بولسا تىزىملىككە ئەڭ ئالدىغا قوشىدۇ
+                users.unshift(userDataObj);
             }
 
             localStorage.setItem('uyghur_tg_users', JSON.stringify(users));
@@ -518,10 +521,11 @@
             });
         }
 
-        // Render Users List for Admin
+        // باشقۇرغۇچى ئۈچۈن كىرگەن ئابونتلارنى دەرھال كۆرسىتىش
         function renderAdminUserList() {
             const users = JSON.parse(localStorage.getItem('uyghur_tg_users')) || [];
             const container = document.getElementById('registeredUsersContainer');
+            document.getElementById('userCount').innerText = users.length;
             container.innerHTML = '';
 
             if(users.length === 0) {
@@ -535,7 +539,7 @@
                 item.innerHTML = `
                     <div>
                         <strong style="color:#fff;">${u.name}</strong> <span style="color:#40c4ff;">${u.username}</span>
-                        <div style="color:var(--text-muted); font-size:10px; margin-top:2px;">ۋاقتى: ${u.date}</div>
+                        <div style="color:var(--text-muted); font-size:10px; margin-top:2px;">كەلگەن ۋاقتى: ${u.date}</div>
                     </div>
                     <div style="color:var(--primary-color); font-weight:bold; font-size:11px;">
                         ID: ${u.id}
@@ -609,7 +613,7 @@
             });
         }
 
-        // Run App
+        // Start App
         window.onload = function() {
             initApp();
         };
