@@ -353,7 +353,7 @@
         <h2>قانالغا ئەزا بولۇش تەلەپ قىلىنىدۇ</h2>
         <p id="overlayMessage">بۇ فىلىم سۇپىسىنى ئىشلىتىش ئۈچۈن ئاۋۋال كىنو قانىلىمىزغا ئەزا بولۇشىڭىز كېرەك.</p>
         <button class="btn-join-channel" onclick="openChannelLink()">
-            <i class="fa-paper-plane"></i> قانالغا كىرىش (@xaxkinokanili)
+            <i class="fa-paper-plane"></i> قانالغا كىرىش (@xax9898)
         </button>
         <button class="btn-join-channel" style="background:#333; margin-top:10px;" onclick="verifyMembership()">
             <i class="fa-solid fa-rotate-right"></i> ئەزا بولدۇم، كىرىش
@@ -456,7 +456,7 @@
     <div id="linkModal" class="link-modal">
         <div class="link-modal-content">
             <h3 style="color:#40c4ff; font-size:15px; margin-bottom:10px;">فىلىم كۆۋرۈك ئۇلانمىسى تەيار بولدى!</h3>
-            <p style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">تۆۋەندىكى ئادرېسنى كۆچۈرۈپ <b>@xaxkinokanili</b> قانىلىڭىزغا رەسىم بىلەن قوشۇپ ئېلان قىلىڭ:</p>
+            <p style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">تۆۋەندىكى ئادرېسنى كۆچۈرۈپ <b>@xax9898</b> قانىلىڭىزغا رەسىم بىلەن قوشۇپ ئېلان قىلىڭ:</p>
             <input type="text" id="generatedLinkInput" class="form-control" readonly style="text-align:center; direction:ltr; margin-bottom:15px;">
             <button class="btn-submit" onclick="copyMovieLink()"><i class="fa-regular fa-copy"></i> كۆچۈرۈش</button>
             <button class="btn-submit" style="background:#333; margin-top:5px;" onclick="closeLinkModal()">تاقاش</button>
@@ -466,7 +466,7 @@
     <script>
         const ADMIN_TELEGRAM_ID = "8739045571"; 
         const BOT_TOKEN = "8896471507:AAEzUELuWaYwr4JlheAwKX0F1iyFDfOoW94";
-        const CHANNEL_USERNAME = "@xaxkinokanili";
+        const CHANNEL_USERNAME = "@xax9898"; // ✨ توغرا قانال ئادرېسى بىلەن ئالماشتۇرۇلدى
         const BOT_USERNAME = "Uyghur98_bot"; 
 
         const tg = window.Telegram?.WebApp;
@@ -518,13 +518,11 @@
             checkDeepLinkStart();
         }
 
-        // Cors-Proxy ئارقىلىق API چاقىرىپ xاتا چىقىپ قېلىشنىڭ ئالدىنى ئېلىش
         async function checkChannelMembership(userId) {
             // باشقۇرغۇچى بولسا ئاپتوماتىك ئۆتىدۇ
             if (String(userId) === String(ADMIN_TELEGRAM_ID)) return true;
 
             try {
-                // Telegram API غا CORS ئۆتكۈزگۈچ ئارقىلىق ئىلتىماس ئەۋەتىش
                 const targetUrl = `https://api.telegram.org/bot${BOT_TOKEN}/getChatMember?chat_id=${CHANNEL_USERNAME}&user_id=${userId}`;
                 const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
                 
@@ -536,13 +534,12 @@
                     const status = tgRes.result.status;
                     return ['creator', 'administrator', 'member'].includes(status);
                 } else {
-                    // ئەگەر Bot قانالدا Admin قىلىنمىغان بولسا، ئىشلەتكۈچىنى توسۇپ قويماسلىق ئۈچۈن رۇخسەت بېرىدۇ
                     console.warn("Telegram API Error:", tgRes.description);
                     return true; 
                 }
             } catch (error) {
                 console.error("Channel check error:", error);
-                return true; // توردا كېچىكىش بولسا ئىشلەتكۈچىنى توسۇپ قويمايدۇ
+                return true;
             }
         }
 
@@ -553,8 +550,8 @@
         }
 
         function openChannelLink() {
-            if(tg) tg.openTelegramLink(`https://t.me/xaxkinokanili`);
-            else window.open(`https://t.me/xaxkinokanili`, '_blank');
+            if(tg) tg.openTelegramLink(`https://t.me/xax9898`);
+            else window.open(`https://t.me/xax9898`, '_blank');
         }
 
         async function verifyMembership() {
