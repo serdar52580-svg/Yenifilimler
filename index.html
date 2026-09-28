@@ -42,6 +42,36 @@
             user-select: none;
         }
 
+        /* Telegram Outside Access Overlay */
+        #telegramOnlyOverlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: #0f0f0f;
+            z-index: 9999;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+        }
+
+        #telegramOnlyOverlay i {
+            font-size: 60px;
+            color: #40c4ff;
+            margin-bottom: 15px;
+        }
+
+        #telegramOnlyOverlay h2 {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        #telegramOnlyOverlay p {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
         /* App Header Bar */
         .app-header {
             position: sticky;
@@ -202,7 +232,7 @@
             border-radius: var(--radius);
             padding: 10px;
             margin-top: 15px;
-            max-height: 200px;
+            max-height: 250px;
             overflow-y: auto;
         }
 
@@ -210,7 +240,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 8px 0;
+            padding: 10px;
             border-bottom: 1px solid var(--border-color);
             font-size: 12px;
         }
@@ -240,11 +270,16 @@
             font-size: 10px;
             gap: 4px;
             cursor: pointer;
-            width: 33%;
+            flex: 1;
         }
 
         .nav-item i { font-size: 18px; }
         .nav-item.active { color: var(--primary-color); }
+
+        /* Hide Admin Nav item by default */
+        .admin-nav-item {
+            display: none;
+        }
 
         /* Player Modal */
         .player-modal {
@@ -271,84 +306,95 @@
 </head>
 <body>
 
-    <!-- Header -->
-    <div class="app-header">
-        <div class="app-title">
-            <i class="fa-solid fa-play-circle"></i> ئۇيغۇر كىنو Mini App
-        </div>
-        <div id="tgBadge" style="font-size: 11px; color: #40c4ff;">
-            <i class="fa-brands fa-telegram"></i> Telegram
-        </div>
+    <!-- Telegram Outside Access Overlay -->
+    <div id="telegramOnlyOverlay">
+        <i class="fa-brands fa-telegram"></i>
+        <h2>كىرىش چەكلەندى</h2>
+        <p>بۇ بەتنى پەقەت Telegram Mini App ئىچىدىلا ئاچقىلى بولىدۇ.</p>
     </div>
 
-    <!-- 1. Home View -->
-    <div id="homeView" class="app-view active">
-        <!-- Telegram User Info Banner -->
-        <div class="user-card" id="userProfileCard">
-            <div class="user-avatar" id="uAvatar"><i class="fa-solid fa-user"></i></div>
-            <div class="user-details">
-                <h4 id="uName">مېھمان ئىشلەتكۈچى</h4>
-                <p id="uTgId">ID: كىرىلمىدى</p>
+    <!-- Main Container -->
+    <div id="appContainer">
+        <!-- Header -->
+        <div class="app-header">
+            <div class="app-title">
+                <i class="fa-solid fa-play-circle"></i> ئۇيغۇر كىنو Mini App
+            </div>
+            <div id="tgBadge" style="font-size: 11px; color: #40c4ff;">
+                <i class="fa-brands fa-telegram"></i> Telegram
             </div>
         </div>
 
-        <div class="section-header">
-            <span>يېڭى قوشۇلغان فىلىملەر</span>
-        </div>
-        <div class="movie-grid" id="homeMovieList"></div>
-    </div>
+        <!-- 1. Home View -->
+        <div id="homeView" class="app-view active">
+            <!-- Telegram User Info Banner -->
+            <div class="user-card" id="userProfileCard">
+                <div class="user-avatar" id="uAvatar"><i class="fa-solid fa-user"></i></div>
+                <div class="user-details">
+                    <h4 id="uName">ئىشلەتكۈچى</h4>
+                    <p id="uTgId">ID: --</p>
+                </div>
+            </div>
 
-    <!-- 2. Search View -->
-    <div id="searchView" class="app-view">
-        <div class="form-group">
-            <input type="text" id="searchInput" class="form-control" placeholder="كىنو ئىسمىنى ئىزدەڭ..." onkeyup="handleSearch()">
+            <div class="section-header">
+                <span>يېڭى قوشۇلغان فىلىملەر</span>
+            </div>
+            <div class="movie-grid" id="homeMovieList"></div>
         </div>
-        <div class="movie-grid" id="searchMovieList"></div>
-    </div>
 
-    <!-- 3. Admin View -->
-    <div id="adminView" class="app-view">
-        <div class="section-header">
-            <span>باشقۇرغۇچى: يېڭى فىلىم قوشۇش</span>
-        </div>
-        <form id="addMovieForm" onsubmit="saveMovie(event)">
+        <!-- 2. Search View -->
+        <div id="searchView" class="app-view">
             <div class="form-group">
-                <label>فىلىم ئىسمى</label>
-                <input type="text" id="movieTitle" class="form-control" placeholder="فىلىم نامى" required>
+                <input type="text" id="searchInput" class="form-control" placeholder="كىنو ئىسمىنى ئىزدەڭ..." onkeyup="handleSearch()">
             </div>
-            <div class="form-group">
-                <label>فىلىم رەسىمى (Image URL)</label>
-                <input type="url" id="moviePoster" class="form-control" placeholder="https://..." required>
-            </div>
-            <div class="form-group">
-                <label>Archive.org ئۇلانمىسى</label>
-                <input type="url" id="movieArchiveUrl" class="form-control" placeholder="https://archive.org/details/..." required>
-            </div>
-            <button type="submit" class="btn-submit"><i class="fa-solid fa-plus"></i> فىلىم ئېلان قىلىش</button>
-        </form>
+            <div class="movie-grid" id="searchMovieList"></div>
+        </div>
 
-        <!-- Registered Users Section for Admin -->
-        <div class="section-header" style="margin-top: 25px;">
-            <span><i class="fa-solid fa-users"></i> كىرگەن ئىشلەتكۈچىلەر تىزىملىكى</span>
-        </div>
-        <div class="users-list" id="registeredUsersContainer">
-            <!-- Telegram Users List will be loaded here -->
-        </div>
-    </div>
+        <!-- 3. Admin View (Pequet Bashqurghuchi uchunkha) -->
+        <div id="adminView" class="app-view">
+            <div class="section-header">
+                <span><i class="fa-solid fa-film"></i> يېڭى فىلىم قوشۇش</span>
+            </div>
+            <form id="addMovieForm" onsubmit="saveMovie(event)">
+                <div class="form-group">
+                    <label>فىلىم ئىسمى</label>
+                    <input type="text" id="movieTitle" class="form-control" placeholder="فىلىم نامى" required>
+                </div>
+                <div class="form-group">
+                    <label>فىلىم رەسىمى (Image URL)</label>
+                    <input type="url" id="moviePoster" class="form-control" placeholder="https://..." required>
+                </div>
+                <div class="form-group">
+                    <label>Archive.org ئۇلانمىسى</label>
+                    <input type="url" id="movieArchiveUrl" class="form-control" placeholder="https://archive.org/details/..." required>
+                </div>
+                <button type="submit" class="btn-submit"><i class="fa-solid fa-plus"></i> فىلىم ئېلان قىلىش</button>
+            </form>
 
-    <!-- Bottom Navigation -->
-    <div class="bottom-nav">
-        <div class="nav-item active" onclick="switchView('homeView', this)">
-            <i class="fa-solid fa-house"></i>
-            <span>ئاساسىي</span>
+            <!-- Registered Users Section for Admin -->
+            <div class="section-header" style="margin-top: 25px;">
+                <span><i class="fa-solid fa-users"></i> كىرگەن ئىشلەتكۈچىلەر (Telegram)</span>
+            </div>
+            <div class="users-list" id="registeredUsersContainer">
+                <!-- User list will be populated here -->
+            </div>
         </div>
-        <div class="nav-item" onclick="switchView('searchView', this)">
-            <i class="fa-solid fa-magnifying-glass"></i>
-            <span>ئىزدەش</span>
-        </div>
-        <div class="nav-item" onclick="switchView('adminView', this)">
-            <i class="fa-solid fa-user-shield"></i>
-            <span>باشقۇرۇش</span>
+
+        <!-- Bottom Navigation -->
+        <div class="bottom-nav">
+            <div class="nav-item active" onclick="switchView('homeView', this)">
+                <i class="fa-solid fa-house"></i>
+                <span>ئاساسىي</span>
+            </div>
+            <div class="nav-item" onclick="switchView('searchView', this)">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <span>ئىزدەش</span>
+            </div>
+            <!-- Admin Nav Item (Hidden by default) -->
+            <div class="nav-item admin-nav-item" id="adminNavItem" onclick="switchView('adminView', this)">
+                <i class="fa-solid fa-user-shield"></i>
+                <span>باشقۇرۇش</span>
+            </div>
         </div>
     </div>
 
@@ -362,41 +408,64 @@
     </div>
 
     <script>
-        // Initialize Telegram WebApp SDK
+        // ----------------------------------------------------
+        // 🔑 باشقۇرغۇچى Telegram ID نومۇرىڭىز بېكىتىلدى
+        // ----------------------------------------------------
+        const ADMIN_TELEGRAM_ID = "8739045571"; 
+
         const tg = window.Telegram?.WebApp;
-        if(tg) {
+        let currentUser = null;
+
+        // Verify Telegram Environment & Init
+        function initApp() {
+            // 1. Check if opened inside Telegram Mini App
+            if (!tg || !tg.initDataUnsafe || !tg.initDataUnsafe.user) {
+                document.getElementById('telegramOnlyOverlay').style.display = 'flex';
+                document.getElementById('appContainer').style.display = 'none';
+                return;
+            }
+
             tg.ready();
-            tg.expand(); // Make it full screen inside Telegram
+            tg.expand();
+
+            currentUser = tg.initDataUnsafe.user;
+
+            // Render User Header UI
+            const fullName = `${currentUser.first_name || ''} ${currentUser.last_name || ''}`.trim();
+            document.getElementById('uName').innerText = fullName || 'ئىشلەتكۈچى';
+            document.getElementById('uTgId').innerText = `@${currentUser.username || 'نامسىز'} | ID: ${currentUser.id}`;
+            document.getElementById('uAvatar').innerText = (currentUser.first_name || 'U').charAt(0).toUpperCase();
+
+            // Store User Info in LocalStorage DB
+            saveUserData(currentUser);
+
+            // 2. Check Admin Privilege (Show Admin View ONLY for your Telegram ID)
+            if (String(currentUser.id) === String(ADMIN_TELEGRAM_ID)) {
+                document.getElementById('adminNavItem').style.display = 'flex';
+            }
+
+            renderHomeMovies();
         }
 
-        // Initialize User Login & Save User Info
-        function initTelegramUser() {
-            let userData = {
-                id: "12345678",
-                first_name: "مېھمان",
-                username: "Guest_User"
+        // Save User Data to DB
+        function saveUserData(user) {
+            let users = JSON.parse(localStorage.getItem('uyghur_tg_users')) || [];
+            const existingIndex = users.findIndex(u => String(u.id) === String(user.id));
+
+            const userDataObj = {
+                id: user.id,
+                name: `${user.first_name || ''} ${user.last_name || ''}`.trim(),
+                username: user.username ? `@${user.username}` : 'يوق',
+                date: new Date().toLocaleString('ug')
             };
 
-            if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
-                userData = tg.initDataUnsafe.user;
+            if (existingIndex > -1) {
+                users[existingIndex] = userDataObj;
+            } else {
+                users.push(userDataObj);
             }
 
-            // Display in Home Profile Header
-            document.getElementById('uName').innerText = `${userData.first_name || ''} ${userData.last_name || ''}`;
-            document.getElementById('uTgId').innerText = `@${userData.username || 'نامسىز'} | ID: ${userData.id}`;
-            document.getElementById('uAvatar').innerText = (userData.first_name || 'U').charAt(0).toUpperCase();
-
-            // Save user to LocalStorage Database for Admin View
-            let users = JSON.parse(localStorage.getItem('uyghur_tg_users')) || [];
-            if (!users.some(u => u.id === userData.id)) {
-                users.push({
-                    id: userData.id,
-                    name: `${userData.first_name || ''} ${userData.last_name || ''}`,
-                    username: userData.username || 'يوق',
-                    date: new Date().toLocaleDateString('ug')
-                });
-                localStorage.setItem('uyghur_tg_users', JSON.stringify(users));
-            }
+            localStorage.setItem('uyghur_tg_users', JSON.stringify(users));
         }
 
         // Default Movies Data
@@ -415,6 +484,11 @@
         }
 
         function switchView(viewId, navElement) {
+            if (viewId === 'adminView' && String(currentUser?.id) !== String(ADMIN_TELEGRAM_ID)) {
+                alert('سىزنىڭ باشقۇرۇش ھوقۇقىڭىز يوق!');
+                return;
+            }
+
             document.querySelectorAll('.app-view').forEach(v => v.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
 
@@ -444,14 +518,14 @@
             });
         }
 
-        // Render Telegram Users in Admin Panel
+        // Render Users List for Admin
         function renderAdminUserList() {
             const users = JSON.parse(localStorage.getItem('uyghur_tg_users')) || [];
             const container = document.getElementById('registeredUsersContainer');
             container.innerHTML = '';
 
             if(users.length === 0) {
-                container.innerHTML = `<p style="font-size:12px; color:var(--text-muted);">ھېچقانداق ئىشلەتكۈچى كىرمىدى</p>`;
+                container.innerHTML = `<p style="font-size:12px; color:var(--text-muted); padding:10px;">ھېچقانداق ئىشلەتكۈچى كىرمىدى</p>`;
                 return;
             }
 
@@ -460,9 +534,10 @@
                 item.className = 'user-item';
                 item.innerHTML = `
                     <div>
-                        <strong>${u.name}</strong> (@${u.username})
+                        <strong style="color:#fff;">${u.name}</strong> <span style="color:#40c4ff;">${u.username}</span>
+                        <div style="color:var(--text-muted); font-size:10px; margin-top:2px;">ۋاقتى: ${u.date}</div>
                     </div>
-                    <div style="color:var(--text-muted); font-size:10px;">
+                    <div style="color:var(--primary-color); font-weight:bold; font-size:11px;">
                         ID: ${u.id}
                     </div>
                 `;
@@ -470,7 +545,7 @@
             });
         }
 
-        // Save Movie
+        // Save Movie (Admin Only)
         function saveMovie(e) {
             e.preventDefault();
             const title = document.getElementById('movieTitle').value;
@@ -486,7 +561,7 @@
             localStorage.setItem('uyghur_movies', JSON.stringify(movies));
 
             document.getElementById('addMovieForm').reset();
-            alert('فىلىم قوشۇلدى!');
+            alert('فىلىم مۇۋەپپەقىيەتلىك ئېلان قىلىندى!');
             switchView('homeView', document.querySelectorAll('.nav-item')[0]);
         }
 
@@ -534,10 +609,9 @@
             });
         }
 
-        // Startup
+        // Run App
         window.onload = function() {
-            initTelegramUser();
-            renderHomeMovies();
+            initApp();
         };
     </script>
 </body>
