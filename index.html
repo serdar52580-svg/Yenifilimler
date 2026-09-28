@@ -3,10 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <!-- Cache Buster Meta Tags (دەرھال يېڭىلىنىش ئۈچۈن) -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
     <title>ئۇيغۇر كىنو - Telegram Mini App</title>
 
     <!-- Telegram Web App SDK JavaScript Library -->
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js?v=2.0"></script>
 
     <!-- Google Fonts & FontAwesome -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -42,7 +48,7 @@
             user-select: none;
         }
 
-        /* Telegram Outside Access Overlay */
+        /* Outside Access Screen */
         #telegramOnlyOverlay {
             display: none;
             position: fixed;
@@ -56,23 +62,11 @@
             padding: 20px;
         }
 
-        #telegramOnlyOverlay i {
-            font-size: 60px;
-            color: #40c4ff;
-            margin-bottom: 15px;
-        }
+        #telegramOnlyOverlay i { font-size: 60px; color: #40c4ff; margin-bottom: 15px; }
+        #telegramOnlyOverlay h2 { font-size: 18px; margin-bottom: 10px; }
+        #telegramOnlyOverlay p { font-size: 13px; color: var(--text-muted); }
 
-        #telegramOnlyOverlay h2 {
-            font-size: 18px;
-            margin-bottom: 10px;
-        }
-
-        #telegramOnlyOverlay p {
-            font-size: 13px;
-            color: var(--text-muted);
-        }
-
-        /* App Header Bar */
+        /* App Header */
         .app-header {
             position: sticky;
             top: 0;
@@ -95,7 +89,7 @@
             gap: 8px;
         }
 
-        /* Telegram User Profile Card */
+        /* User Profile Display Banner */
         .user-card {
             background: linear-gradient(135deg, #2c2c2e, #1c1c1e);
             padding: 12px;
@@ -107,9 +101,17 @@
             border: 1px solid var(--border-color);
         }
 
-        .user-avatar {
-            width: 45px;
-            height: 45px;
+        .user-avatar-img {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--primary-color);
+        }
+
+        .user-avatar-placeholder {
+            width: 48px;
+            height: 48px;
             border-radius: 50%;
             background: var(--primary-color);
             display: flex;
@@ -120,26 +122,17 @@
             font-weight: bold;
         }
 
-        .user-details h4 {
-            font-size: 14px;
-            margin-bottom: 2px;
-        }
+        .user-details h4 { font-size: 14px; margin-bottom: 2px; }
+        .user-details p { font-size: 11px; color: var(--text-muted); }
 
-        .user-details p {
-            font-size: 11px;
-            color: var(--text-muted);
-        }
-
-        /* View Sections */
+        /* Views System */
         .app-view {
             display: none;
             padding: 16px;
             animation: fadeIn 0.2s ease-in-out;
         }
 
-        .app-view.active {
-            display: block;
-        }
+        .app-view.active { display: block; }
 
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(5px); }
@@ -155,7 +148,7 @@
             justify-content: space-between;
         }
 
-        /* Movie Grid */
+        /* Movie Layout */
         .movie-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
@@ -166,7 +159,6 @@
             background: var(--card-bg);
             border-radius: var(--radius);
             overflow: hidden;
-            position: relative;
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
             cursor: pointer;
         }
@@ -178,9 +170,7 @@
             display: block;
         }
 
-        .movie-card-info {
-            padding: 8px;
-        }
+        .movie-card-info { padding: 8px; }
 
         .movie-card-title {
             font-size: 12px;
@@ -190,18 +180,9 @@
             text-overflow: ellipsis;
         }
 
-        /* Admin Controls */
-        .form-group {
-            margin-bottom: 12px;
-        }
-
-        .form-group label {
-            display: block;
-            font-size: 11px;
-            color: var(--text-muted);
-            margin-bottom: 5px;
-        }
-
+        /* Admin Forms */
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; font-size: 11px; color: var(--text-muted); margin-bottom: 5px; }
         .form-control {
             width: 100%;
             padding: 10px 12px;
@@ -226,30 +207,52 @@
             margin-top: 10px;
         }
 
-        /* User List Table in Admin */
+        /* Detailed User Item in Admin */
         .users-list {
             background: var(--card-bg);
             border-radius: var(--radius);
             padding: 10px;
             margin-top: 15px;
-            max-height: 250px;
+            max-height: 350px;
             overflow-y: auto;
         }
 
-        .user-item {
+        .user-item-card {
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            gap: 12px;
             padding: 10px;
             border-bottom: 1px solid var(--border-color);
-            font-size: 12px;
         }
 
-        .user-item:last-child {
-            border-bottom: none;
+        .user-item-card:last-child { border-bottom: none; }
+
+        .user-item-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            object-fit: cover;
         }
 
-        /* Bottom Navigation */
+        .user-item-placeholder {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #fff;
+            font-size: 16px;
+        }
+
+        .user-item-info { flex: 1; }
+        .user-item-info strong { font-size: 13px; color: #fff; display: block; }
+        .user-item-info span { font-size: 11px; color: #40c4ff; }
+        .user-item-info small { font-size: 10px; color: var(--text-muted); display: block; margin-top: 2px; }
+
+        /* Navigation */
         .bottom-nav {
             position: fixed;
             bottom: 0; left: 0; right: 0;
@@ -275,11 +278,7 @@
 
         .nav-item i { font-size: 18px; }
         .nav-item.active { color: var(--primary-color); }
-
-        /* Hide Admin Nav item by default */
-        .admin-nav-item {
-            display: none;
-        }
+        .admin-nav-item { display: none; }
 
         /* Player Modal */
         .player-modal {
@@ -313,23 +312,23 @@
         <p>بۇ بەتنى پەقەت Telegram Mini App ئىچىدىلا ئاچقىلى بولىدۇ.</p>
     </div>
 
-    <!-- Main Container -->
+    <!-- Main App Container -->
     <div id="appContainer">
-        <!-- Header -->
+        <!-- App Header -->
         <div class="app-header">
             <div class="app-title">
                 <i class="fa-solid fa-play-circle"></i> ئۇيغۇر كىنو Mini App
             </div>
-            <div id="tgBadge" style="font-size: 11px; color: #40c4ff;">
+            <div style="font-size: 11px; color: #40c4ff;">
                 <i class="fa-brands fa-telegram"></i> Telegram
             </div>
         </div>
 
         <!-- 1. Home View -->
         <div id="homeView" class="app-view active">
-            <!-- Telegram User Info Banner -->
+            <!-- Current User Profile Display -->
             <div class="user-card" id="userProfileCard">
-                <div class="user-avatar" id="uAvatar"><i class="fa-solid fa-user"></i></div>
+                <div id="uAvatarContainer"></div>
                 <div class="user-details">
                     <h4 id="uName">ئىشلەتكۈچى</h4>
                     <p id="uTgId">ID: --</p>
@@ -350,7 +349,7 @@
             <div class="movie-grid" id="searchMovieList"></div>
         </div>
 
-        <!-- 3. Admin View (Pequet Bashqurghuchi uchunkha) -->
+        <!-- 3. Admin View -->
         <div id="adminView" class="app-view">
             <div class="section-header">
                 <span><i class="fa-solid fa-film"></i> يېڭى فىلىم قوشۇش</span>
@@ -371,13 +370,11 @@
                 <button type="submit" class="btn-submit"><i class="fa-solid fa-plus"></i> فىلىم ئېلان قىلىش</button>
             </form>
 
-            <!-- Registered Users Section for Admin -->
+            <!-- User List Table for Admin -->
             <div class="section-header" style="margin-top: 25px;">
-                <span><i class="fa-solid fa-users"></i> كىرگەن ئىشلەتكۈچىلەر (<span id="userCount">0</span>)</span>
+                <span><i class="fa-solid fa-users"></i> كىرگەن ئابونتلار (<span id="userCount">0</span>)</span>
             </div>
-            <div class="users-list" id="registeredUsersContainer">
-                <!-- User list will be populated here -->
-            </div>
+            <div class="users-list" id="registeredUsersContainer"></div>
         </div>
 
         <!-- Bottom Navigation -->
@@ -390,7 +387,7 @@
                 <i class="fa-solid fa-magnifying-glass"></i>
                 <span>ئىزدەش</span>
             </div>
-            <!-- Admin Nav Item (Hidden by default) -->
+            <!-- Admin Nav Item -->
             <div class="nav-item admin-nav-item" id="adminNavItem" onclick="switchView('adminView', this)">
                 <i class="fa-solid fa-user-shield"></i>
                 <span>باشقۇرۇش</span>
@@ -414,9 +411,8 @@
         const tg = window.Telegram?.WebApp;
         let currentUser = null;
 
-        // App ئېچىلغاندا ئىشلەيدىغان ئاساسىي ئىقتىدار
         function initApp() {
-            // 1. Telegram Mini App ئىچىدە ئېچىلغانلىقىنى دەلەللەش
+            // Telegram Mini App تەستىقلاش
             if (!tg || !tg.initDataUnsafe || !tg.initDataUnsafe.user) {
                 document.getElementById('telegramOnlyOverlay').style.display = 'flex';
                 document.getElementById('appContainer').style.display = 'none';
@@ -428,16 +424,22 @@
 
             currentUser = tg.initDataUnsafe.user;
 
-            // 2. ئابونت كىرگەن ھامان ئاپتوماتىك دەرھال تىزىملاش (Auto Register)
+            // ⚡ ئابونت كىرگەن ھامان ئاپتوماتىك باش رەسىمى، ئىسمى، ID لىرىنى دەرھال ساقلاش
             autoRegisterUser(currentUser);
 
-            // UI دا ئابونت ئۇچۇرىنى كۆرسىتىش
+            // ئاساسىي كۆرۈنمىدە ئابونت ئۆز ئۇچۇرىنى كۆرىدۇ
             const fullName = `${currentUser.first_name || ''} ${currentUser.last_name || ''}`.trim();
             document.getElementById('uName').innerText = fullName || 'ئىشلەتكۈچى';
             document.getElementById('uTgId').innerText = `@${currentUser.username || 'نامسىز'} | ID: ${currentUser.id}`;
-            document.getElementById('uAvatar').innerText = (currentUser.first_name || 'U').charAt(0).toUpperCase();
+            
+            const avatarBox = document.getElementById('uAvatarContainer');
+            if (currentUser.photo_url) {
+                avatarBox.innerHTML = `<img src="${currentUser.photo_url}" class="user-avatar-img">`;
+            } else {
+                avatarBox.innerHTML = `<div class="user-avatar-placeholder">${(currentUser.first_name || 'U').charAt(0).toUpperCase()}</div>`;
+            }
 
-            // 3. پەقەت سىزنىڭ ID (8739045571) بىلەن كىرگەندىلا باشقۇرۇش كۇنپىكىنى كۆرسىتىش
+            // پەقەت سىز كىرگەندىلا باشقۇرۇش كۇنپىكى ئېچىلىدۇ
             if (String(currentUser.id) === String(ADMIN_TELEGRAM_ID)) {
                 document.getElementById('adminNavItem').style.display = 'flex';
             }
@@ -445,7 +447,7 @@
             renderHomeMovies();
         }
 
-        // ⚡ ئابونتلارنى كىرگەن ھامان ئاپتوماتىك ساقلاش ئىقتىدارى
+        // ⚡ ئابونتلارنىڭ باش رەسىمى (Photo URL)، ئىسمى، ID سىنى دەرھال ساقلاش
         function autoRegisterUser(user) {
             let users = JSON.parse(localStorage.getItem('uyghur_tg_users')) || [];
             const existingIndex = users.findIndex(u => String(u.id) === String(user.id));
@@ -457,21 +459,20 @@
                 id: user.id,
                 name: `${user.first_name || ''} ${user.last_name || ''}`.trim(),
                 username: user.username ? `@${user.username}` : 'يوق',
+                photo_url: user.photo_url || null, // باش رەسىمى URL
                 date: timeFormatted
             };
 
             if (existingIndex > -1) {
-                // ئابونت ئىلگىرى كىرگەن بولسا ۋاقتىنى يېڭىلايدۇ
                 users[existingIndex] = userDataObj;
             } else {
-                // يېڭى ئئابونت كىرگەن بولسا تىزىملىككە ئەڭ ئالدىغا قوشىدۇ
                 users.unshift(userDataObj);
             }
 
             localStorage.setItem('uyghur_tg_users', JSON.stringify(users));
         }
 
-        // Default Movies Data
+        // Default Movies
         const defaultMovies = [
             {
                 id: 1,
@@ -521,7 +522,7 @@
             });
         }
 
-        // باشقۇرغۇچى ئۈچۈن كىرگەن ئابونتلارنى دەرھال كۆرسىتىش
+        // 🌟 باشقۇرغۇچى پانيېلىدا ئابونتلارنىڭ باش رەسىمى ۋە تەپشىلى ئۇچۇرلىرىنى كۆرسىتىش
         function renderAdminUserList() {
             const users = JSON.parse(localStorage.getItem('uyghur_tg_users')) || [];
             const container = document.getElementById('registeredUsersContainer');
@@ -535,11 +536,18 @@
 
             users.forEach(u => {
                 const item = document.createElement('div');
-                item.className = 'user-item';
+                item.className = 'user-item-card';
+
+                const avatarHtml = u.photo_url 
+                    ? `<img src="${u.photo_url}" class="user-item-avatar">` 
+                    : `<div class="user-item-placeholder">${(u.name || 'U').charAt(0).toUpperCase()}</div>`;
+
                 item.innerHTML = `
-                    <div>
-                        <strong style="color:#fff;">${u.name}</strong> <span style="color:#40c4ff;">${u.username}</span>
-                        <div style="color:var(--text-muted); font-size:10px; margin-top:2px;">كەلگەن ۋاقتى: ${u.date}</div>
+                    ${avatarHtml}
+                    <div class="user-item-info">
+                        <strong>${u.name}</strong>
+                        <span>${u.username}</span>
+                        <small>كەلگەن ۋاقتى: ${u.date}</small>
                     </div>
                     <div style="color:var(--primary-color); font-weight:bold; font-size:11px;">
                         ID: ${u.id}
@@ -549,7 +557,6 @@
             });
         }
 
-        // Save Movie (Admin Only)
         function saveMovie(e) {
             e.preventDefault();
             const title = document.getElementById('movieTitle').value;
@@ -569,7 +576,6 @@
             switchView('homeView', document.querySelectorAll('.nav-item')[0]);
         }
 
-        // Player Logic
         function playMovie(title, url) {
             const modal = document.getElementById('playerModal');
             const container = document.getElementById('playerContainer');
@@ -590,7 +596,6 @@
             modal.style.display = 'none';
         }
 
-        // Search Filter
         function handleSearch() {
             const query = document.getElementById('searchInput').value.toLowerCase();
             const movies = getMovies();
@@ -613,7 +618,6 @@
             });
         }
 
-        // Start App
         window.onload = function() {
             initApp();
         };
