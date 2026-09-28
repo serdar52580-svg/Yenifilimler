@@ -48,7 +48,7 @@
             user-select: none;
         }
 
-        /* Outside Access Screen */
+        /* Access Restriction Overlay */
         #telegramOnlyOverlay {
             display: none;
             position: fixed;
@@ -64,7 +64,21 @@
 
         #telegramOnlyOverlay i { font-size: 60px; color: #40c4ff; margin-bottom: 15px; }
         #telegramOnlyOverlay h2 { font-size: 18px; margin-bottom: 10px; }
-        #telegramOnlyOverlay p { font-size: 13px; color: var(--text-muted); }
+        #telegramOnlyOverlay p { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; }
+
+        .btn-join-channel {
+            display: inline-block;
+            background: #24A1DE;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+            margin-top: 10px;
+        }
 
         /* App Header */
         .app-header {
@@ -307,15 +321,41 @@
         .player-body { flex: 1; }
         .player-body iframe { width: 100%; height: 100%; border: none; }
         .btn-close { color: #fff; font-size: 20px; background: none; border: none; }
+
+        /* Link Box Modal */
+        .link-modal {
+            display: none;
+            position: fixed;
+            top:0; left:0; right:0; bottom:0;
+            background: rgba(0,0,0,0.85);
+            z-index: 3000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .link-modal-content {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 380px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
 
-    <!-- Telegram Outside Access Overlay -->
+    <!-- Access Channel Restriction Overlay -->
     <div id="telegramOnlyOverlay">
         <i class="fa-brands fa-telegram"></i>
-        <h2>كىرىش چەكلەندى</h2>
-        <p>بۇ بەتنى پەقەت Telegram Mini App ئىچىدىلا ئاچقىلى بولىدۇ.</p>
+        <h2>قانالغا ئەزا بولۇش تەلەپ قىلىنىدۇ</h2>
+        <p id="overlayMessage">بۇ فىلىم سۇپىسىنى ئىشلىتىش ئۈچۈن ئاۋۋال كىنو قانىلىمىزغا ئەزا بولۇشىڭىز كېرەك.</p>
+        <button class="btn-join-channel" onclick="openChannelLink()">
+            <i class="fa-paper-plane"></i> قانالغا كىرىش (@xaxkinokanili)
+        </button>
+        <button class="btn-join-channel" style="background:#333; margin-top:10px;" onclick="verifyMembership()">
+            <i class="fa-solid fa-rotate-right"></i> ئەزا بولدۇم، قايتا تەكشۈرۈش
+        </button>
     </div>
 
     <!-- Main App Container -->
@@ -379,7 +419,7 @@
             <div class="section-header" style="margin-top: 25px;">
                 <span><i class="fa-solid fa-users"></i> كىرگەن ئابونتلار (<span id="userCount">0</span>)</span>
             </div>
-            <p style="font-size:11px; color:var(--text-muted); margin-bottom:8px;">* ئابونتنى باسسىڭىز ئۇنىڭ Profile كۆزنىكى ئېچىلىدۇ</p>
+            <p style="font-size:11px; color:var(--text-muted); margin-bottom:8px;">* ئابونت كىرگەن ھامان بۇ يەرگە ئاپتوماتىك قوشۇلىدۇ</p>
             <div class="users-list" id="registeredUsersContainer"></div>
         </div>
 
@@ -410,18 +450,38 @@
         <div class="player-body" id="playerContainer"></div>
     </div>
 
+    <!-- Generated Link Modal -->
+    <div id="linkModal" class="link-modal">
+        <div class="link-modal-content">
+            <h3 style="color:#40c4ff; font-size:15px; margin-bottom:10px;">فىلىم كۆۋرۈك ئۇلانمىسى تەيار بولدى!</h3>
+            <p style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">تۆۋەندىكى ئادرېسنى كۆچۈرۈپ <b>@xaxkinokanili</b> قانىلىڭىزغا رەسىم بىلەن قوشۇپ ئېلان قىلىڭ:</p>
+            <input type="text" id="generatedLinkInput" class="form-control" readonly style="text-align:center; direction:ltr; margin-bottom:15px;">
+            <button class="btn-submit" onclick="copyMovieLink()"><i class="fa-regular fa-copy"></i> كۆچۈرۈش</button>
+            <button class="btn-submit" style="background:#333; margin-top:5px;" onclick="closeLinkModal()">تاقاش</button>
+        </div>
+    </div>
+
     <script>
-        // 🔑 باشقۇرغۇچى Telegram ID نومۇرىڭىز
+        // 🔑 1. باشقۇرغۇچى ID
         const ADMIN_TELEGRAM_ID = "8739045571"; 
+
+        // 🔑 2. Telegram Bot Token
+        const BOT_TOKEN = "8896471507:AAEzUELuWaYwr4JlheAwKX0F1iyFDfOoW94";
+
+        // 🔑 3. قانال ئىسمى
+        const CHANNEL_USERNAME = "@xaxkinokanili";
+
+        // 🔑 4. Bot Username (@ سىز)
+        const BOT_USERNAME = "Uyghur98_bot"; 
 
         const tg = window.Telegram?.WebApp;
         let currentUser = null;
 
-        function initApp() {
-            // Telegram Mini App تەستىقلاش
+        const userSyncChannel = new BroadcastChannel('user_registration_channel');
+
+        async function initApp() {
             if (!tg || !tg.initDataUnsafe || !tg.initDataUnsafe.user) {
-                document.getElementById('telegramOnlyOverlay').style.display = 'flex';
-                document.getElementById('appContainer').style.display = 'none';
+                showRestrictionOverlay("بۇ بەتنى پەقەت Telegram Mini App ئىچىدىلا ئاچقىلى بولىدۇ.");
                 return;
             }
 
@@ -430,10 +490,17 @@
 
             currentUser = tg.initDataUnsafe.user;
 
-            // ئابونت كىرگەن ھامان ئاپتوماتىك تەپسىلاتلىرىنى ساقلاش
+            // ⚡ 1. ئابونتنىڭ قانالغا ئەزا بولغانلىقىنى Bot API ئارقىلىق تەكشۈرۈش
+            const isMember = await checkChannelMembership(currentUser.id);
+            if (!isMember) {
+                showRestrictionOverlay("بۇ فىلىم سۇپىسىنى ئىشلىتىش ئۈچۈن ئاۋۋال كىنو قانىلىمىزغا ئەزا بولۇشىڭىز كېرەك.");
+                return;
+            }
+
+            // 2. ئابونت كىرگەن ھامان ئاپتوماتىك تەپسىلاتلىرىنى ساقلاش
             autoRegisterUser(currentUser);
 
-            // ئاساسىي كۆرۈنمىدە پەقەت ئىسمى ۋە رەسىمىلا كۆرۈنىدۇ (ID يوشۇرۇلدى)
+            // 3. ئاساسىي كۆرۈنمىدە ئىسمى بىلەن رەسىمى كۆرۈنىدۇ
             const fullName = `${currentUser.first_name || ''} ${currentUser.last_name || ''}`.trim();
             document.getElementById('uName').innerText = fullName || 'ئىشلەتكۈچى';
             
@@ -444,15 +511,74 @@
                 avatarBox.innerHTML = `<div class="user-avatar-placeholder">${(currentUser.first_name || 'U').charAt(0).toUpperCase()}</div>`;
             }
 
-            // پەقەت باشقۇرغۇچىگىلا Menyus ئېچىلىدۇ
+            // 4. باشقۇرغۇچى Menyusىنى ئېچىش
             if (String(currentUser.id) === String(ADMIN_TELEGRAM_ID)) {
                 document.getElementById('adminNavItem').style.display = 'flex';
             }
 
             renderHomeMovies();
+
+            // 5. Deep Link ئارقىلىق كىنو ئېچىش
+            checkDeepLinkStart();
         }
 
-        // ئابونتلارنىڭ تەپسىلىي ئۇچۇرلىرىنى ساقلاش
+        // Telegram Bot API ئارقىلىق قانال ئەزالىقىنى تەكشۈرۈش
+        async function checkChannelMembership(userId) {
+            // باشقۇرغۇچى بولسا تەكشۈرمەيدۇ
+            if (String(userId) === String(ADMIN_TELEGRAM_ID)) return true;
+
+            try {
+                const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/getChatMember?chat_id=${CHANNEL_USERNAME}&user_id=${userId}`);
+                const data = await response.json();
+
+                if (data.ok) {
+                    const status = data.result.status;
+                    return ['creator', 'administrator', 'member'].includes(status);
+                }
+                return false;
+            } catch (error) {
+                console.error("Channel check error:", error);
+                return true; 
+            }
+        }
+
+        function showRestrictionOverlay(msg) {
+            document.getElementById('overlayMessage').innerText = msg;
+            document.getElementById('telegramOnlyOverlay').style.display = 'flex';
+            document.getElementById('appContainer').style.display = 'none';
+        }
+
+        function openChannelLink() {
+            if(tg) tg.openTelegramLink(`https://t.me/xaxkinokanili`);
+            else window.open(`https://t.me/xaxkinokanili`, '_blank');
+        }
+
+        async function verifyMembership() {
+            if(currentUser) {
+                const isMember = await checkChannelMembership(currentUser.id);
+                if(isMember) {
+                    document.getElementById('telegramOnlyOverlay').style.display = 'none';
+                    document.getElementById('appContainer').style.display = 'block';
+                    initApp();
+                } else {
+                    alert("ياق، سىز يەنە قانالغا ئەزا بولمىدىڭىز! ئاۋۋال ئەزا بولۇڭ.");
+                }
+            }
+        }
+
+        function checkDeepLinkStart() {
+            const startParam = tg.initDataUnsafe.start_param;
+            if (startParam && startParam.startsWith('movie_')) {
+                const movieId = startParam.replace('movie_', '');
+                const movies = getMovies();
+                const targetMovie = movies.find(m => String(m.id) === String(movieId));
+                
+                if (targetMovie) {
+                    playMovie(targetMovie.title, targetMovie.archiveUrl);
+                }
+            }
+        }
+
         function autoRegisterUser(user) {
             let users = JSON.parse(localStorage.getItem('uyghur_tg_users')) || [];
             const existingIndex = users.findIndex(u => String(u.id) === String(user.id));
@@ -475,12 +601,20 @@
             }
 
             localStorage.setItem('uyghur_tg_users', JSON.stringify(users));
+            userSyncChannel.postMessage('new_user_added');
         }
 
-        // Default Movies
+        userSyncChannel.onmessage = (event) => {
+            if (event.data === 'new_user_added') {
+                if (document.getElementById('adminView').classList.contains('active')) {
+                    renderAdminUserList();
+                }
+            }
+        };
+
         const defaultMovies = [
             {
-                id: 1,
+                id: 1001,
                 title: "ئالەم ئارا ساياھەت",
                 poster: "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=400&q=80",
                 archiveUrl: "https://archive.org/embed/Popeye_for_President"
@@ -527,7 +661,6 @@
             });
         }
 
-        // باشقۇرغۇچى پانيېلىدا ئابونتنى باسسا Profile كۆزنىكى ئېچىلىدۇ
         function renderAdminUserList() {
             const users = JSON.parse(localStorage.getItem('uyghur_tg_users')) || [];
             const container = document.getElementById('registeredUsersContainer');
@@ -542,8 +675,6 @@
             users.forEach(u => {
                 const item = document.createElement('div');
                 item.className = 'user-item-card';
-                
-                // ئابونتنى باسقاندا Profile كۆزنىكىنى ئېچىش
                 item.onclick = () => openUserChat(u);
 
                 const avatarHtml = u.photo_url 
@@ -567,7 +698,6 @@
             });
         }
 
-        // Telegram Profile كۆزنىكىنى ئېچىش
         function openUserChat(user) {
             if (user.username && user.username !== '') {
                 tg.openTelegramLink(`https://t.me/${user.username}`);
@@ -586,12 +716,27 @@
                 archiveUrl = archiveUrl.replace('/details/', '/embed/');
             }
 
+            const movieId = Date.now();
             const movies = getMovies();
-            movies.unshift({ id: Date.now(), title, poster, archiveUrl });
+            movies.unshift({ id: movieId, title, poster, archiveUrl });
             localStorage.setItem('uyghur_movies', JSON.stringify(movies));
 
             document.getElementById('addMovieForm').reset();
-            alert('فىلىم مۇۋەپپەقىيەتلىك ئېلان قىلىندى!');
+
+            const generatedLink = `https://t.me/${BOT_USERNAME}?startapp=movie_${movieId}`;
+            document.getElementById('generatedLinkInput').value = generatedLink;
+            document.getElementById('linkModal').style.display = 'flex';
+        }
+
+        function copyMovieLink() {
+            const input = document.getElementById('generatedLinkInput');
+            input.select();
+            document.execCommand('copy');
+            alert('ئۇلانما كۆچۈرۈلدى! ئەمدى كىنو قانىلىڭىزغا ئېلان قىلسىڭىز بولىدۇ.');
+        }
+
+        function closeLinkModal() {
+            document.getElementById('linkModal').style.display = 'none';
             switchView('homeView', document.querySelectorAll('.nav-item')[0]);
         }
 
