@@ -48,7 +48,7 @@
             user-select: none;
         }
 
-        /* Access Restriction Overlay */
+        /* Strict Access Overlay */
         #telegramOnlyOverlay {
             display: flex;
             position: fixed;
@@ -105,7 +105,7 @@
             gap: 8px;
         }
 
-        /* User Profile Banner */
+        /* User Profile Display Banner */
         .user-card {
             background: linear-gradient(135deg, #2c2c2e, #1c1c1e);
             padding: 12px;
@@ -140,7 +140,7 @@
 
         .user-details h4 { font-size: 15px; font-weight: 700; }
 
-        /* View Sections */
+        /* Views System */
         .app-view {
             display: none;
             padding: 16px;
@@ -176,6 +176,19 @@
             overflow: hidden;
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
             cursor: pointer;
+            position: relative;
+        }
+
+        .movie-badge {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            background: rgba(229, 9, 20, 0.85);
+            color: white;
+            font-size: 9px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
         }
 
         .movie-card img {
@@ -195,7 +208,7 @@
             text-overflow: ellipsis;
         }
 
-        /* Forms */
+        /* Admin Forms */
         .form-group { margin-bottom: 12px; }
         .form-group label { display: block; font-size: 11px; color: var(--text-muted); margin-bottom: 5px; }
         .form-control {
@@ -222,7 +235,7 @@
             margin-top: 10px;
         }
 
-        /* Admin User List */
+        /* Clickable User Item in Admin Panel */
         .users-list {
             background: var(--card-bg);
             border-radius: var(--radius);
@@ -239,6 +252,7 @@
             padding: 10px;
             border-bottom: 1px solid var(--border-color);
             cursor: pointer;
+            transition: background 0.2s;
             border-radius: 8px;
         }
 
@@ -289,59 +303,20 @@
             flex-direction: row-reverse;
         }
 
-        .chat-msg-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            object-fit: cover;
-        }
-
+        .chat-msg-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
         .chat-msg-avatar-ph {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: var(--primary-color);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-            color: #fff;
-            font-weight: bold;
+            width: 32px; height: 32px; border-radius: 50%; background: var(--primary-color);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 14px; color: #fff; font-weight: bold;
         }
 
-        .chat-msg-body {
-            background: #2c2c2e;
-            padding: 8px 12px;
-            border-radius: 12px;
-        }
+        .chat-msg-body { background: #2c2c2e; padding: 8px 12px; border-radius: 12px; }
+        .chat-msg-item.my-msg .chat-msg-body { background: #e50914; }
 
-        .chat-msg-item.my-msg .chat-msg-body {
-            background: #e50914;
-        }
-
-        .chat-msg-author {
-            font-size: 11px;
-            font-weight: bold;
-            color: #40c4ff;
-            margin-bottom: 2px;
-        }
-
-        .chat-msg-item.my-msg .chat-msg-author {
-            color: #ffeb3b;
-            text-align: left;
-        }
-
-        .chat-msg-text {
-            font-size: 13px;
-            word-break: break-word;
-        }
-
-        .chat-msg-time {
-            font-size: 9px;
-            color: var(--text-muted);
-            margin-top: 4px;
-            text-align: left;
-        }
+        .chat-msg-author { font-size: 11px; font-weight: bold; color: #40c4ff; margin-bottom: 2px; }
+        .chat-msg-item.my-msg .chat-msg-author { color: #ffeb3b; text-align: left; }
+        .chat-msg-text { font-size: 13px; word-break: break-word; }
+        .chat-msg-time { font-size: 9px; color: var(--text-muted); margin-top: 4px; text-align: left; }
 
         .chat-input-bar {
             padding: 8px 10px;
@@ -352,27 +327,16 @@
         }
 
         .chat-input-bar input {
-            flex: 1;
-            padding: 10px;
-            background: #2c2c2e;
-            border: none;
-            border-radius: 8px;
-            color: #fff;
-            font-size: 13px;
-            outline: none;
+            flex: 1; padding: 10px; background: #2c2c2e;
+            border: none; border-radius: 8px; color: #fff; font-size: 13px; outline: none;
         }
 
         .chat-input-bar button {
-            background: var(--primary-color);
-            border: none;
-            color: #fff;
-            padding: 0 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 16px;
+            background: var(--primary-color); border: none; color: #fff;
+            padding: 0 16px; border-radius: 8px; cursor: pointer; font-size: 16px;
         }
 
-        /* Bottom Navigation */
+        /* Navigation */
         .bottom-nav {
             position: fixed;
             bottom: 0; left: 0; right: 0;
@@ -386,14 +350,8 @@
         }
 
         .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            color: var(--text-muted);
-            font-size: 10px;
-            gap: 4px;
-            cursor: pointer;
-            flex: 1;
+            display: flex; flex-direction: column; align-items: center;
+            color: var(--text-muted); font-size: 10px; gap: 4px; cursor: pointer; flex: 1;
         }
 
         .nav-item i { font-size: 18px; }
@@ -402,20 +360,12 @@
 
         /* Player Modal */
         .player-modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: #000;
-            z-index: 2000;
-            flex-direction: column;
+            display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: #000; z-index: 2000; flex-direction: column;
         }
 
         .player-header {
-            padding: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: rgba(0,0,0,0.8);
+            padding: 12px; display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.8);
         }
 
         .player-body { flex: 1; }
@@ -424,28 +374,17 @@
 
         /* Link Box Modal */
         .link-modal {
-            display: none;
-            position: fixed;
-            top:0; left:0; right:0; bottom:0;
-            background: rgba(0,0,0,0.85);
-            z-index: 3000;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
+            display: none; position: fixed; top:0; left:0; right:0; bottom:0;
+            background: rgba(0,0,0,0.85); z-index: 3000; justify-content: center; align-items: center; padding: 20px;
         }
         .link-modal-content {
-            background: var(--card-bg);
-            padding: 20px;
-            border-radius: 12px;
-            width: 100%;
-            max-width: 380px;
-            text-align: center;
+            background: var(--card-bg); padding: 20px; border-radius: 12px; width: 100%; max-width: 380px; text-align: center;
         }
     </style>
 </head>
 <body>
 
-    <!-- Access Channel Restriction Overlay -->
+    <!-- Strict Restriction Overlay -->
     <div id="telegramOnlyOverlay">
         <i class="fa-brands fa-telegram"></i>
         <h2>قانالغا ئەزا بولۇش تەلەپ قىلىنىدۇ</h2>
@@ -525,13 +464,20 @@
                     <label>Archive.org ئۇلانمىسى</label>
                     <input type="url" id="movieArchiveUrl" class="form-control" placeholder="https://archive.org/details/..." required>
                 </div>
+                <!-- ✨ باشقۇرغۇچى كۆرۈش رۇخسىتىنى بەلگىلەش -->
+                <div class="form-group">
+                    <label>كۆرۈش رۇخسىتى</label>
+                    <select id="movieAccessType" class="form-control">
+                        <option value="all">ھەممە ئابونت كۆرەلەيدۇ</option>
+                        <option value="members">پەقەت قانالغا ئەزا بولغانلارلا كۆرەلەيدۇ</option>
+                    </select>
+                </div>
                 <button type="submit" class="btn-submit"><i class="fa-solid fa-plus"></i> فىلىم ئېلان قىلىش</button>
             </form>
 
             <div class="section-header" style="margin-top: 25px;">
                 <span><i class="fa-solid fa-users"></i> كىرگەن ئابونتلار (<span id="userCount">0</span>)</span>
             </div>
-            <p style="font-size:11px; color:var(--text-muted); margin-bottom:8px;">* ئابونت كىرگەن ھامان بۇ يەرگە ئاپتوماتىك قوشۇلىدۇ</p>
             <div class="users-list" id="registeredUsersContainer"></div>
         </div>
 
@@ -584,6 +530,7 @@
 
         const tg = window.Telegram?.WebApp;
         let currentUser = null;
+        let isUserChannelMember = false;
 
         const userSyncChannel = new BroadcastChannel('user_registration_channel');
         const chatSyncChannel = new BroadcastChannel('chat_messages_channel');
@@ -599,9 +546,10 @@
 
             currentUser = tg.initDataUnsafe.user;
 
-            // 1. 🔥 پۇختا قانال ئەزالىقىنى تەكشۈرۈش
-            const isMember = await checkChannelMembership(currentUser.id);
-            if (!isMember) {
+            // 1. 🔥 ئابونتنىڭ قانالغا ئەزا بولغانلىقىنى چىڭ تەكشۈرۈش
+            isUserChannelMember = await checkChannelMembership(currentUser.id);
+
+            if (!isUserChannelMember) {
                 showRestrictionOverlay("بۇ فىلىم سۇپىسىنى ئىشلىتىش ئۈچۈن ئاۋۋال كىنو قانىلىمىزغا ئەزا بولۇشىڭىز كېرەك.");
                 return;
             } else {
@@ -609,7 +557,7 @@
                 document.getElementById('appContainer').style.display = 'block';
             }
 
-            // 2. ئابونت ئاپتوماتىك تىزىملىنىدۇ
+            // 2. ئابونتلارنى ئاپتوماتىك تىزىملاش (باشقۇرغۇچى پانيېلى ئۈچۈن)
             autoRegisterUser(currentUser);
 
             // 3. ئىشلەتكۈچى سالاھىيىتى
@@ -633,28 +581,27 @@
             renderChatMessages();
         }
 
-        // 🌟 CORS چەكلىمىسىگە ئۇچرىمايدىغان كۆۋرۈك ئارقىلىق تەكشۈرۈش
+        // ⚡ ئابونتنىڭ قانالدا بار-يوقلىقىنى ئېنىق تەكشۈرۈش
         async function checkChannelMembership(userId) {
             if (String(userId) === String(ADMIN_TELEGRAM_ID)) return true;
 
             try {
-                // CORS ئۆتكۈزگۈچى ئىشلىتىش
-                const targetApi = `https://api.telegram.org/bot${BOT_TOKEN}/getChatMember?chat_id=${encodeURIComponent(CHANNEL_USERNAME)}&user_id=${userId}`;
-                const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetApi)}`;
+                const api = `https://api.telegram.org/bot${BOT_TOKEN}/getChatMember?chat_id=${encodeURIComponent(CHANNEL_USERNAME)}&user_id=${userId}`;
+                const proxy = `https://api.allorigins.win/get?url=${encodeURIComponent(api)}`;
 
-                const response = await fetch(proxyUrl);
-                const data = await response.json();
+                const res = await fetch(proxy);
+                const data = await res.json();
+                const tgRes = JSON.parse(data.contents);
 
-                if (data && data.ok) {
-                    const status = data.result.status;
+                if (tgRes && tgRes.ok) {
+                    const status = tgRes.result.status;
                     return ['creator', 'administrator', 'member'].includes(status);
                 } else {
                     return false;
                 }
             } catch (error) {
                 console.error("Channel Check Error:", error);
-                // ئەگەر تور ئۈزۈلۈپ قالسا تېلېگرامنىڭ ساقلانغان ئەزالىق سالاھىيىتى ئارقىلىق جەزملەيدۇ
-                return localStorage.getItem(`verified_member_${userId}`) === 'true';
+                return false;
             }
         }
 
@@ -673,7 +620,6 @@
             if(currentUser) {
                 const isMember = await checkChannelMembership(currentUser.id);
                 if(isMember) {
-                    localStorage.setItem(`verified_member_${currentUser.id}`, 'true');
                     document.getElementById('telegramOnlyOverlay').style.display = 'none';
                     document.getElementById('appContainer').style.display = 'block';
                     initApp();
@@ -691,11 +637,12 @@
                 const targetMovie = movies.find(m => String(m.id) === String(movieId));
                 
                 if (targetMovie) {
-                    playMovie(targetMovie.title, targetMovie.archiveUrl);
+                    playMovie(targetMovie.title, targetMovie.archiveUrl, targetMovie.accessType);
                 }
             }
         }
 
+        // ⚡ ئابونتلارنىڭ باشقۇرغۇچىغا دەرھال كۆرۈنۈشى ئۈچۈن تىزىملاش
         function autoRegisterUser(user) {
             let users = JSON.parse(localStorage.getItem('uyghur_tg_users')) || [];
             const existingIndex = users.findIndex(u => String(u.id) === String(user.id));
@@ -729,7 +676,7 @@
             }
         };
 
-        /* Chat Logic */
+        /* Chat System */
         function sendChatMessage() {
             const textInput = document.getElementById('chatInputText');
             const text = textInput.value.trim();
@@ -795,7 +742,8 @@
                 id: 1001,
                 title: "ئالەم ئارا ساياھەت",
                 poster: "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=400&q=80",
-                archiveUrl: "https://archive.org/embed/Popeye_for_President"
+                archiveUrl: "https://archive.org/embed/Popeye_for_President",
+                accessType: "all"
             }
         ];
 
@@ -829,8 +777,13 @@
             movies.forEach(movie => {
                 const card = document.createElement('div');
                 card.className = 'movie-card';
-                card.onclick = () => playMovie(movie.title, movie.archiveUrl);
+                card.onclick = () => playMovie(movie.title, movie.archiveUrl, movie.accessType);
+                
+                const badge = movie.accessType === 'members' 
+                    ? `<div class="movie-badge"><i class="fa-solid fa-lock"></i> ئەزالارغا</div>` : '';
+
                 card.innerHTML = `
+                    ${badge}
                     <img src="${movie.poster}" alt="${movie.title}">
                     <div class="movie-card-info">
                         <div class="movie-card-title">${movie.title}</div>
@@ -890,6 +843,7 @@
             const title = document.getElementById('movieTitle').value;
             const poster = document.getElementById('moviePoster').value;
             let archiveUrl = document.getElementById('movieArchiveUrl').value;
+            const accessType = document.getElementById('movieAccessType').value;
 
             if(archiveUrl.includes('archive.org/details/')) {
                 archiveUrl = archiveUrl.replace('/details/', '/embed/');
@@ -897,7 +851,7 @@
 
             const movieId = Date.now();
             const movies = getMovies();
-            movies.unshift({ id: movieId, title, poster, archiveUrl });
+            movies.unshift({ id: movieId, title, poster, archiveUrl, accessType });
             localStorage.setItem('uyghur_movies', JSON.stringify(movies));
 
             document.getElementById('addMovieForm').reset();
@@ -919,7 +873,14 @@
             switchView('homeView', document.querySelectorAll('.nav-item')[0]);
         }
 
-        function playMovie(title, url) {
+        function playMovie(title, url, accessType) {
+            // ئەگەر فىلىم «پەقەت ئەزالارغا» قىلىپ بەلگىلەنگەن بولسا ۋە ئابونت ئەزا بولمىغان بولسا
+            if (accessType === 'members' && !isUserChannelMember) {
+                alert("بۇ فىلىمنى كۆرۈش ئۈچۈن ئاۋۋال @xax9898 قانىلىمىزغا ئەزا بولۇشىڭىز كېرەك!");
+                showRestrictionOverlay("بۇ فىلىمنى كۆرۈش ئۈچۈن ئاۋۋال كىنو قانىلىمىزغا ئەزا بولۇشىڭىز كېرەك.");
+                return;
+            }
+
             const modal = document.getElementById('playerModal');
             const container = document.getElementById('playerContainer');
             document.getElementById('playerTitle').innerText = title;
@@ -950,7 +911,7 @@
             filtered.forEach(movie => {
                 const card = document.createElement('div');
                 card.className = 'movie-card';
-                card.onclick = () => playMovie(movie.title, movie.archiveUrl);
+                card.onclick = () => playMovie(movie.title, movie.archiveUrl, movie.accessType);
                 card.innerHTML = `
                     <img src="${movie.poster}" alt="${movie.title}">
                     <div class="movie-card-info">
