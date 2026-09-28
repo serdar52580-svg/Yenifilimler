@@ -23,6 +23,7 @@
     <style>
         :root {
             --primary-color: #e50914;
+            --vip-color: #ffd700;
             --tg-theme-bg: #0f0f0f;
             --card-bg: #1c1c1e;
             --text-color: #ffffff;
@@ -139,7 +140,15 @@
             font-weight: bold;
         }
 
-        .user-details h4 { font-size: 15px; font-weight: 700; }
+        .user-details h4 { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+        .vip-badge-tag {
+            background: linear-gradient(45deg, #ffd700, #ff9800);
+            color: #000;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
 
         /* View Sections */
         .app-view {
@@ -177,6 +186,31 @@
             overflow: hidden;
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
             cursor: pointer;
+            position: relative;
+        }
+
+        .movie-badge-vip {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            background: linear-gradient(45deg, #ffd700, #ff9800);
+            color: #000;
+            font-size: 9px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        .movie-badge-free {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            background: #4caf50;
+            color: #fff;
+            font-size: 9px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
         }
 
         .movie-card img {
@@ -194,6 +228,34 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+        }
+
+        /* Photo Gallery Layout */
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 12px;
+        }
+
+        .gallery-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        .gallery-card img {
+            width: 100%;
+            height: 160px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .gallery-card-title {
+            padding: 8px;
+            font-size: 11px;
+            color: #ddd;
+            text-align: center;
         }
 
         /* Forms */
@@ -236,16 +298,13 @@
         .user-item-card {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
             padding: 10px;
             border-bottom: 1px solid var(--border-color);
-            cursor: pointer;
             border-radius: 8px;
         }
 
-        .user-item-card:hover, .user-item-card:active { background: #2c2c2e; }
         .user-item-card:last-child { border-bottom: none; }
-
         .user-item-avatar { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; }
         .user-item-placeholder {
             width: 42px; height: 42px; border-radius: 50%; background: #333;
@@ -256,7 +315,17 @@
         .user-item-info { flex: 1; }
         .user-item-info strong { font-size: 13px; color: #fff; display: block; }
         .user-item-info span { font-size: 11px; color: #40c4ff; }
-        .user-item-info small { font-size: 10px; color: var(--text-muted); display: block; margin-top: 2px; }
+        
+        .btn-vip-toggle {
+            background: #ff9800;
+            color: #000;
+            border: none;
+            padding: 5px 10px;
+            font-size: 10px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+        }
 
         /* 💬 Chat Section Styles */
         .chat-container {
@@ -270,25 +339,11 @@
         }
 
         .chat-messages {
-            flex: 1;
-            padding: 12px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
+            flex: 1; padding: 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;
         }
 
-        .chat-msg-item {
-            display: flex;
-            gap: 10px;
-            align-items: flex-start;
-            max-width: 85%;
-        }
-
-        .chat-msg-item.my-msg {
-            align-self: flex-end;
-            flex-direction: row-reverse;
-        }
+        .chat-msg-item { display: flex; gap: 10px; align-items: flex-start; max-width: 85%; }
+        .chat-msg-item.my-msg { align-self: flex-end; flex-direction: row-reverse; }
 
         .chat-msg-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
         .chat-msg-avatar-ph {
@@ -306,21 +361,15 @@
         .chat-msg-time { font-size: 9px; color: var(--text-muted); margin-top: 4px; text-align: left; }
 
         .chat-input-bar {
-            padding: 8px 10px;
-            background: #161618;
-            display: flex;
-            gap: 8px;
-            border-top: 1px solid var(--border-color);
+            padding: 8px 10px; background: #161618; display: flex; gap: 8px; border-top: 1px solid var(--border-color);
         }
 
         .chat-input-bar input {
-            flex: 1; padding: 10px; background: #2c2c2e;
-            border: none; border-radius: 8px; color: #fff; font-size: 13px; outline: none;
+            flex: 1; padding: 10px; background: #2c2c2e; border: none; border-radius: 8px; color: #fff; font-size: 13px; outline: none;
         }
 
         .chat-input-bar button {
-            background: var(--primary-color); border: none; color: #fff;
-            padding: 0 16px; border-radius: 8px; cursor: pointer; font-size: 16px;
+            background: var(--primary-color); border: none; color: #fff; padding: 0 16px; border-radius: 8px; cursor: pointer; font-size: 16px;
         }
 
         /* Navigation */
@@ -401,7 +450,7 @@
             <div class="user-card" id="userProfileCard">
                 <div id="uAvatarContainer"></div>
                 <div class="user-details">
-                    <h4 id="uName">ئىشلەتكۈچى</h4>
+                    <h4 id="uName">ئىشلەتكۈچى <span id="vipBadgeContainer"></span></h4>
                 </div>
             </div>
 
@@ -419,7 +468,15 @@
             <div class="movie-grid" id="searchMovieList"></div>
         </div>
 
-        <!-- 3. Chat View -->
+        <!-- 3. Photos Gallery View (🖼️ يېڭى رەسىملەر بۆلىكى) -->
+        <div id="galleryView" class="app-view">
+            <div class="section-header">
+                <span><i class="fa-solid fa-images"></i> رەسىملەر ئامبىرى</span>
+            </div>
+            <div class="gallery-grid" id="galleryContainer"></div>
+        </div>
+
+        <!-- 4. Chat View -->
         <div id="chatView" class="app-view">
             <div class="section-header">
                 <span><i class="fa-solid fa-comments"></i> ئاممىۋى پاراڭلىشىش سورۇنى</span>
@@ -433,7 +490,7 @@
             </div>
         </div>
 
-        <!-- 4. Admin View -->
+        <!-- 5. Admin View -->
         <div id="adminView" class="app-view">
             <div class="section-header">
                 <span><i class="fa-solid fa-film"></i> يېڭى فىلىم قوشۇش</span>
@@ -451,7 +508,31 @@
                     <label>Archive.org ئۇلانمىسى</label>
                     <input type="url" id="movieArchiveUrl" class="form-control" placeholder="https://archive.org/details/..." required>
                 </div>
+                <!-- 👑 VIP / Free Selection -->
+                <div class="form-group">
+                    <label>فىلىم تۈرى</label>
+                    <select id="movieType" class="form-control">
+                        <option value="free">ھەقسىز (ھەممىگە ئوچۇق)</option>
+                        <option value="vip">👑 VIP (پەقەت VIP ئەزالارغا)</option>
+                    </select>
+                </div>
                 <button type="submit" class="btn-submit"><i class="fa-solid fa-plus"></i> فىلىم ئېلان قىلىش</button>
+            </form>
+
+            <!-- 🖼️ Admin Photo Upload Form -->
+            <div class="section-header" style="margin-top: 25px;">
+                <span><i class="fa-solid fa-image"></i> يېڭى رەسىم يوللاش</span>
+            </div>
+            <form id="addPhotoForm" onsubmit="savePhoto(event)">
+                <div class="form-group">
+                    <label>رەسىم ماۋزۇسى (تېما)</label>
+                    <input type="text" id="photoTitle" class="form-control" placeholder="تېما..." required>
+                </div>
+                <div class="form-group">
+                    <label>رەسىم ئۇلانمىسى (Image URL)</label>
+                    <input type="url" id="photoUrl" class="form-control" placeholder="https://..." required>
+                </div>
+                <button type="submit" class="btn-submit" style="background:#2196f3;"><i class="fa-solid fa-upload"></i> رەسىم يوللاش</button>
             </form>
 
             <div class="section-header" style="margin-top: 25px;">
@@ -469,6 +550,10 @@
             <div class="nav-item" onclick="switchView('searchView', this)">
                 <i class="fa-solid fa-magnifying-glass"></i>
                 <span>ئىزدەش</span>
+            </div>
+            <div class="nav-item" onclick="switchView('galleryView', this)">
+                <i class="fa-solid fa-images"></i>
+                <span>رەسىملەر</span>
             </div>
             <div class="nav-item" onclick="switchView('chatView', this)">
                 <i class="fa-solid fa-comments"></i>
@@ -517,7 +602,6 @@
                 tg.ready();
                 tg.expand();
             } else {
-                // تەستىقلاش ئۈچۈن كىرگۈچى (تېلېگرام جەزملەش)
                 currentUser = {
                     id: Date.now(),
                     first_name: "ئىشلەتكۈچى",
@@ -526,10 +610,10 @@
                 };
             }
 
-            // ⚡ 1. ئابونتلارنى كىرگەن دەقىقىدىلا ئاپتوماتىك تىزىملاش (باشقۇرغۇچى پانيېلى ئۈچۈن)
+            // ئابونتلارنى دەرھال تىزىملاش
             autoRegisterUser(currentUser);
 
-            // ⚡ 2. بىرىنچى قېتىم كىرگەندىلا قانال ئەسكەرتىشىنى كۆرسىتىش
+            // بىرىنچى قېتىم كىرگەنلىكىنى تەكشۈرۈش
             const hasSeenPrompt = localStorage.getItem(`seen_channel_prompt_${currentUser.id}`);
             if (!hasSeenPrompt) {
                 document.getElementById('telegramOnlyOverlay').style.display = 'flex';
@@ -537,10 +621,12 @@
                 document.getElementById('telegramOnlyOverlay').style.display = 'none';
             }
 
-            // 3. ئابونت ئۇچۇرىنى كۆرسىتىش
-            const fullName = `${currentUser.first_name || ''} ${currentUser.last_name || ''}`.trim();
+            // UI ئىشلەتكۈچى كۆرسىتىش
+            const fullName = `${currentUser.first_name \vert{}\vert{} ''}${currentUser.last_name || ''}`.trim();
             document.getElementById('uName').innerText = fullName || 'ئىشلەتكۈچى';
             
+            checkVipStatusUI();
+
             const avatarBox = document.getElementById('uAvatarContainer');
             if (currentUser.photo_url) {
                 avatarBox.innerHTML = `<img src="${currentUser.photo_url}" class="user-avatar-img">`;
@@ -548,14 +634,48 @@
                 avatarBox.innerHTML = `<div class="user-avatar-placeholder">${(currentUser.first_name || 'U').charAt(0).toUpperCase()}</div>`;
             }
 
-            // 4. باشقۇرغۇچى Menyusى
+            // باشقۇرغۇچى Menyusى
             if (String(currentUser.id) === String(ADMIN_TELEGRAM_ID)) {
                 document.getElementById('adminNavItem').style.display = 'flex';
             }
 
             renderHomeMovies();
+            renderGallery();
             checkDeepLinkStart();
             renderChatMessages();
+        }
+
+        function checkVipStatusUI() {
+            const isVip = isUserVip(currentUser.id);
+            const container = document.getElementById('vipBadgeContainer');
+            if(isVip) {
+                container.innerHTML = `<span class="vip-badge-tag">👑 VIP</span>`;
+            } else {
+                container.innerHTML = ``;
+            }
+        }
+
+        function isUserVip(userId) {
+            if (String(userId) === String(ADMIN_TELEGRAM_ID)) return true;
+            const vipUsers = JSON.parse(localStorage.getItem('uyghur_vip_users')) || [];
+            return vipUsers.includes(String(userId));
+        }
+
+        function toggleUserVipStatus(userId) {
+            let vipUsers = JSON.parse(localStorage.getItem('uyghur_vip_users')) || [];
+            const strId = String(userId);
+            
+            if (vipUsers.includes(strId)) {
+                vipUsers = vipUsers.filter(id => id !== strId);
+                alert('VIP سالاھىيىتى بىكار قىلىندى.');
+            } else {
+                vipUsers.push(strId);
+                alert('VIP سالاھىيىتى بېرىلدى!');
+            }
+
+            localStorage.setItem('uyghur_vip_users', JSON.stringify(vipUsers));
+            renderAdminUserList();
+            checkVipStatusUI();
         }
 
         function openChannelLink() {
@@ -570,7 +690,6 @@
             document.getElementById('telegramOnlyOverlay').style.display = 'none';
         }
 
-        // ⚡ ئابونتلارنى باشقۇرغۇچىغا 100% كۆرسىتىپ تىزىملاش
         function autoRegisterUser(user) {
             if (!user || !user.id) return;
             
@@ -615,12 +734,12 @@
                 const targetMovie = movies.find(m => String(m.id) === String(movieId));
                 
                 if (targetMovie) {
-                    playMovie(targetMovie.title, targetMovie.archiveUrl);
+                    playMovie(targetMovie.title, targetMovie.archiveUrl, targetMovie.type);
                 }
             }
         }
 
-        /* Chat System */
+        /* 💬 Chat System */
         function sendChatMessage() {
             const textInput = document.getElementById('chatInputText');
             const text = textInput.value.trim();
@@ -681,12 +800,46 @@
             }
         };
 
+        /* 🖼️ Photo Gallery Functions */
+        function savePhoto(e) {
+            e.preventDefault();
+            const title = document.getElementById('photoTitle').value;
+            const url = document.getElementById('photoUrl').value;
+
+            const photos = JSON.parse(localStorage.getItem('uyghur_app_photos')) || [];
+            photos.unshift({ id: Date.now(), title, url });
+            localStorage.setItem('uyghur_app_photos', JSON.stringify(photos));
+
+            document.getElementById('addPhotoForm').reset();
+            alert('رەسىم مۇۋەپپەقىيەتلىك ئېلان قىلىندى!');
+            renderGallery();
+        }
+
+        function renderGallery() {
+            const photos = JSON.parse(localStorage.getItem('uyghur_app_photos')) || [
+                { id: 1, title: "ئۇيغۇر كىنو سۇپىسى", url: "https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?auto=format&fit=crop&w=400&q=80" }
+            ];
+            const container = document.getElementById('galleryContainer');
+            container.innerHTML = '';
+
+            photos.forEach(p => {
+                const card = document.createElement('div');
+                card.className = 'gallery-card';
+                card.innerHTML = `
+                    <img src="${p.url}" alt="${p.title}">
+                    <div class="gallery-card-title">${p.title}</div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
         const defaultMovies = [
             {
                 id: 1001,
                 title: "ئالەم ئارا ساياھەت",
                 poster: "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=400&q=80",
-                archiveUrl: "https://archive.org/embed/Popeye_for_President"
+                archiveUrl: "https://archive.org/embed/Popeye_for_President",
+                type: "free"
             }
         ];
 
@@ -708,6 +861,7 @@
             if(navElement) navElement.classList.add('active');
 
             if(viewId === 'homeView') renderHomeMovies();
+            if(viewId === 'galleryView') renderGallery();
             if(viewId === 'adminView') renderAdminUserList();
             if(viewId === 'chatView') renderChatMessages();
         }
@@ -720,8 +874,14 @@
             movies.forEach(movie => {
                 const card = document.createElement('div');
                 card.className = 'movie-card';
-                card.onclick = () => playMovie(movie.title, movie.archiveUrl);
+                card.onclick = () => playMovie(movie.title, movie.archiveUrl, movie.type);
+
+                const badge = movie.type === 'vip' 
+                    ? `<div class="movie-badge-vip">👑 VIP</div>` 
+                    : `<div class="movie-badge-free">ھەقسىز</div>`;
+
                 card.innerHTML = `
+                    ${badge}
                     <img src="${movie.poster}" alt="${movie.title}">
                     <div class="movie-card-info">
                         <div class="movie-card-title">${movie.title}</div>
@@ -745,35 +905,26 @@
             users.forEach(u => {
                 const item = document.createElement('div');
                 item.className = 'user-item-card';
-                item.onclick = () => openUserChat(u);
 
                 const avatarHtml = u.photo_url 
                     ? `<img src="${u.photo_url}" class="user-item-avatar">` 
                     : `<div class="user-item-placeholder">${(u.name || 'U').charAt(0).toUpperCase()}</div>`;
 
                 const displayUsername = u.username ? `@${u.username}` : 'Username يوق';
+                const userIsVip = isUserVip(u.id);
 
                 item.innerHTML = `
                     ${avatarHtml}
                     <div class="user-item-info">
-                        <strong>${u.name}</strong>
+                        <strong>${u.name} ${userIsVip ? '👑' : ''}</strong>
                         <span>${displayUsername}</span>
-                        <small>كەلگەن ۋاقتى: ${u.date}</small>
                     </div>
-                    <div style="color:#40c4ff; font-size:16px;">
-                        <i class="fa-solid fa-circle-info"></i>
-                    </div>
+                    <button class="btn-vip-toggle" onclick="toggleUserVipStatus('${u.id}')">
+                        ${userIsVip ? 'VIP بىكار قىلىش' : 'VIP قىلىش'}
+                    </button>
                 `;
                 container.appendChild(item);
             });
-        }
-
-        function openUserChat(user) {
-            if (user.username && user.username !== '') {
-                tg.openTelegramLink(`https://t.me/${user.username}`);
-            } else if (user.id) {
-                tg.openTelegramLink(`https://t.me/user?id=${user.id}`);
-            }
         }
 
         function saveMovie(e) {
@@ -781,6 +932,7 @@
             const title = document.getElementById('movieTitle').value;
             const poster = document.getElementById('moviePoster').value;
             let archiveUrl = document.getElementById('movieArchiveUrl').value;
+            const type = document.getElementById('movieType').value;
 
             if(archiveUrl.includes('archive.org/details/')) {
                 archiveUrl = archiveUrl.replace('/details/', '/embed/');
@@ -788,7 +940,7 @@
 
             const movieId = Date.now();
             const movies = getMovies();
-            movies.unshift({ id: movieId, title, poster, archiveUrl });
+            movies.unshift({ id: movieId, title, poster, archiveUrl, type });
             localStorage.setItem('uyghur_movies', JSON.stringify(movies));
 
             document.getElementById('addMovieForm').reset();
@@ -810,7 +962,12 @@
             switchView('homeView', document.querySelectorAll('.nav-item')[0]);
         }
 
-        function playMovie(title, url) {
+        function playMovie(title, url, type) {
+            if (type === 'vip' && !isUserVip(currentUser?.id)) {
+                alert("بۇ VIP فىلىم! كۆرۈش ئۈچۈن باشقۇرۇشقا ئىلتىماس قىلىپ VIP ئەزا بولۇڭ.");
+                return;
+            }
+
             const modal = document.getElementById('playerModal');
             const container = document.getElementById('playerContainer');
             document.getElementById('playerTitle').innerText = title;
@@ -841,7 +998,7 @@
             filtered.forEach(movie => {
                 const card = document.createElement('div');
                 card.className = 'movie-card';
-                card.onclick = () => playMovie(movie.title, movie.archiveUrl);
+                card.onclick = () => playMovie(movie.title, movie.archiveUrl, movie.type);
                 card.innerHTML = `
                     <img src="${movie.poster}" alt="${movie.title}">
                     <div class="movie-card-info">
