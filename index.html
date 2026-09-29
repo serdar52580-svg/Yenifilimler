@@ -84,20 +84,6 @@
         #browserBlockOverlay h2 { font-size: 18px; margin-bottom: 10px; color: #fff; }
         #browserBlockOverlay p { font-size: 13px; color: #8e8e93; line-height: 1.6; }
 
-        /* كىرىش كۆزنىكى (Login Overlay) */
-        #loginOverlay {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: var(--tg-theme-bg); z-index: 9999;
-            display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px;
-        }
-        .login-box {
-            background: var(--card-bg); border: 1px solid var(--border-color);
-            padding: 24px; border-radius: 16px; width: 100%; max-width: 340px; text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-        .login-box h2 { font-size: 18px; color: var(--primary-color); margin-bottom: 8px; }
-        .login-box p { font-size: 12px; color: var(--text-muted); margin-bottom: 20px; line-height: 1.5; }
-
         #telegramOnlyOverlay {
             display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(15, 15, 15, 0.98); z-index: 9998;
@@ -126,12 +112,11 @@
         }
 
         .user-card-left { display: flex; align-items: center; gap: 12px; }
+        .user-avatar-img { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary-color); }
         .user-avatar-placeholder { background: var(--primary-color); width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; color: white; font-weight: bold; }
 
         .user-details h4 { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
         .vip-badge-tag { background: linear-gradient(45deg, #ffd700, #ff9800); color: #000; font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
-
-        .btn-logout { background: #333; color: #ff5252; border: 1px solid var(--border-color); padding: 6px 10px; font-size: 11px; border-radius: 6px; cursor: pointer; font-weight: 600; }
 
         .app-view { display: none; padding: 16px; }
         .app-view.active { display: block; }
@@ -209,28 +194,11 @@
 </head>
 <body>
 
-    <!-- باشقا توربەتلەردە ئېچىشنى چەكلەش ئېكرانى -->
+    <!-- تېلېگراممىدىن باشقا توربەتلەردە ئېچىشنى قەتئىي چەكلەش ئېكرانى -->
     <div id="browserBlockOverlay">
         <i class="fa-solid fa-triangle-exclamation"></i>
-        <h2>پەقەت تېلېگراممىدالا ئېچىلىدۇ</h2>
-        <p>بۇ توربەتنى نورمال تور كۆرگۈلەردە (Chrome ياكى Safari قاتارلىقلاردا) ئاچقىلى بولمايدۇ. زىيارەت قىلىش ئۈچۈن تېلېگرامما ئارقىلىق كىرىڭ!</p>
-    </div>
-
-    <!-- كىرىش كۆزنىكى (Login Overlay) -->
-    <div id="loginOverlay">
-        <div class="login-box">
-            <h2>ئۇيغۇر كىنو ئەپىگە كىرىش</h2>
-            <p>ئىسمىڭىزنى كىرگۈزۈپ يېڭى ھېسابات ئېچىڭ ياكى باشقۇرغۇچى سۈپىتىدە كىرىڭ!</p>
-            <div class="form-group">
-                <label>ئىسمىڭىز / باشقۇرغۇچى ئاتى</label>
-                <input type="text" id="loginUsernameInput" class="form-control" placeholder="مەسىلەن: ئەھمەد ياكى باشقىلار">
-            </div>
-            <div class="form-group">
-                <label>پارول (ئەگەر باشقۇرغۇچى بولسىڭىز)</label>
-                <input type="password" id="loginPasswordInput" class="form-control" placeholder="پارولنى كىرگۈزۈڭ">
-            </div>
-            <button class="btn-submit" onclick="handleUserLogin()">سىستېمىغا كىرىش / ئېچىش</button>
-        </div>
+        <h2>پەقەت تېلېگرامما مىنى ئەپ ئارقىلىقلا ئاچقىلى بولىدۇ</h2>
+        <p>بۇ توربەتنى نورمال تور كۆرگۈلەردە (Chrome ياكى Safari قاتارلىقلاردا) ئاچقىلى بولمايدۇ. زىيارەت قىلىش ئۈچۈن تېلېگرامما bot ئارقىلىق كىرىڭ!</p>
     </div>
 
     <div id="telegramOnlyOverlay">
@@ -250,12 +218,11 @@
         <div id="homeView" class="app-view active">
             <div class="user-card">
                 <div class="user-card-left">
-                    <div class="user-avatar-placeholder" id="uAvatarLetter">U</div>
+                    <div id="userAvatarContainer"></div>
                     <div class="user-details">
                         <h4 id="uName">ئىشلەتكۈچى <span id="vipBadgeContainer"></span></h4>
                     </div>
                 </div>
-                <button class="btn-logout" onclick="logoutUser()">چىقىش</button>
             </div>
             <div class="section-header">يېڭى قوشۇلغان فىلىملەر</div>
             <div class="movie-grid" id="homeMovieList"></div>
@@ -284,7 +251,7 @@
             </div>
         </div>
 
-        <!-- باشقۇرغۇچىغىلا كۆرۈنىدىغان ئورۇن -->
+        <!-- پەقەت nasrulla ياكى 8739045571 غىلا كۆرۈنىدىغان باشقۇرۇش مەنزىرىسى -->
         <div id="adminView" class="app-view">
             <div class="section-header">توربەتكە فىلىم يوللاش</div>
             <form id="addMovieForm" onsubmit="saveMovie(event)">
@@ -329,10 +296,15 @@
     </div>
 
     <script>
-        // تېلېگرامما ئىچىدە ئىكەنلىكىنى تەكشۈرۈش (تەلتەرەپ توربەتلەردە ئېچىشنى قەتتىي چەكلەش)
+        let currentUser = null;
+        let allMovies = [];
+        let allPhotos = [];
+        let allUsers = [];
+        let allChats = [];
+
         function checkTelegramEnvironment() {
+            // تېلېگرامما مۇھىتىدا ئىكەنلىكىنى تەكشۈرۈش
             const isTelegram = window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user;
-            // ئەگەر تېلېگرامما مۇھىتى بولمىسا (خالىغان بىر براۋزېردا ئېچىلسا) توسۇش ئېكرانىنى چىقىرىمىز
             if (!isTelegram) {
                 document.getElementById('browserBlockOverlay').style.display = 'flex';
                 return false;
@@ -340,61 +312,29 @@
             return true;
         }
 
-        const ADMIN_NAME = "nasrulla";
-        const ADMIN_PASS = "652923";
-        
-        let currentUser = null;
-        let allMovies = [];
-        let allPhotos = [];
-        let allUsers = [];
-        let allChats = [];
-
         window.initAppAfterFirebase = function() {
             if (!checkTelegramEnvironment()) return;
 
-            const savedUser = localStorage.getItem('uyghur_logged_user');
-            if (savedUser) {
-                currentUser = JSON.parse(savedUser);
-                document.getElementById('loginOverlay').style.display = 'none';
-                initializeAppUI();
-            } else {
-                document.getElementById('loginOverlay').style.display = 'flex';
-            }
-        };
+            const tgUser = window.Telegram.WebApp.initDataUnsafe.user;
+            
+            if (tgUser && tgUser.id) {
+                const fullName = (tgUser.first_name || '') + (tgUser.last_name ? ' ' + tgUser.last_name : '');
+                const userIdStr = String(tgUser.id);
+                
+                // 🔥 پەقەت nasrulla ياكى 8739045571 بولغاندىلا باشقۇرغۇچى ھالىتى بېرىلىدۇ
+                const isAdmin = (fullName.toLowerCase().trim() === 'nasrulla' || userIdStr === '8739045571');
 
-        function handleUserLogin() {
-            const nameInput = document.getElementById('loginUsernameInput').value.trim();
-            const passInput = document.getElementById('loginPasswordInput').value.trim();
-
-            if (!nameInput) {
-                alert('ئىسمىڭىزنى كىرگۈزۈڭ!');
-                return;
-            }
-
-            let isAdmin = false;
-            if (nameInput === ADMIN_NAME) {
-                if (passInput !== ADMIN_PASS) {
-                    alert('باشقۇرغۇچى پارۇلى خاتتا!');
-                    return;
-                }
-                isAdmin = true;
+                currentUser = {
+                    id: userIdStr,
+                    first_name: fullName || 'تېلېگرامما ئابونتى',
+                    username: tgUser.username || '',
+                    photo_url: tgUser.photo_url || '',
+                    isAdmin: isAdmin
+                };
             }
 
-            currentUser = {
-                id: isAdmin ? 'admin_nasrulla' : 'user_' + Date.now(),
-                first_name: nameInput,
-                isAdmin: isAdmin
-            };
-
-            localStorage.setItem('uyghur_logged_user', JSON.stringify(currentUser));
-            document.getElementById('loginOverlay').style.display = 'none';
             initializeAppUI();
-        }
-
-        function logoutUser() {
-            localStorage.removeItem('uyghur_logged_user');
-            location.reload();
-        }
+        };
 
         function initializeAppUI() {
             try {
@@ -409,9 +349,17 @@
                 }
 
                 document.getElementById('uName').innerText = currentUser.first_name;
-                document.getElementById('uAvatarLetter').innerText = currentUser.first_name.charAt(0).toUpperCase();
+                
+                const avatarContainer = document.getElementById('userAvatarContainer');
+                if (currentUser.photo_url) {
+                    avatarContainer.innerHTML = `<img src="${currentUser.photo_url}" class="user-avatar-img" alt="Avatar">`;
+                } else {
+                    avatarContainer.innerHTML = `<div class="user-avatar-placeholder">${currentUser.first_name.charAt(0).toUpperCase()}</div>`;
+                }
+
                 checkVipStatusUI();
 
+                // پەقەت ئالاھىدە ئابونتغىلا باشقۇرۇش كۇنۇپكىسى كۆرۈنىدۇ
                 if (currentUser.isAdmin) {
                     document.getElementById('adminNavItem').style.display = 'flex';
                     document.getElementById('headerRoleBadge').innerText = '👑 باشقۇرغۇچى';
@@ -497,6 +445,7 @@
                     window.dbSet(userRef, {
                         id: user.id,
                         name: user.first_name,
+                        username: user.username,
                         isAdmin: user.isAdmin || false,
                         date: new Date().toLocaleDateString()
                     });
