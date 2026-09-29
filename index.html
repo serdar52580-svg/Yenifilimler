@@ -64,8 +64,8 @@
             margin: 0; padding: 0; box-sizing: border-box;
             font-family: 'Noto Sans Arabic', -apple-system, BlinkMacSystemFont, sans-serif;
             -webkit-tap-highlight-color: transparent;
-            -webkit-touch-callout: none; /* تېلېگرامما ياكى تېلېفوندا ئۇلانما مەنسۇبات مەنبەسىنى بېسىپ تۇرۇشنى چەكلەش */
-            user-select: none; /* تېكىست ياكى رەسىملەرنى تاللاشنى چەكلەش */
+            -webkit-touch-callout: none; 
+            user-select: none; 
         }
 
         body {
@@ -73,6 +73,15 @@
             color: var(--text-color);
             direction: rtl;
             padding-bottom: 70px;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+
+        /* 🔒 ئېكران سۈرىتى ئېلىشنىڭ (Screenshot) ئالدىنى ئېلىش ئۈچۈن قاراڭغۇلاشتۇرۇش قەۋىتى */
+        .screenshot-shield {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: transparent; z-index: 999999; pointer-events: none;
         }
 
         #browserBlockOverlay {
@@ -188,14 +197,19 @@
         .nav-item.active { color: var(--primary-color); }
         .admin-nav-item { display: none; }
 
-        .player-modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); z-index: 2000; flex-direction: column; justify-content: flex-start; align-items: center; }
-        .player-header { width: 100%; padding: 12px; display: flex; justify-content: space-between; background: rgba(0,0,0,0.8); }
+        .player-modal, .image-modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.95); z-index: 2000; flex-direction: column; justify-content: flex-start; align-items: center; }
+        .player-header, .image-modal-header { width: 100%; padding: 12px; display: flex; justify-content: space-between; background: rgba(0,0,0,0.8); align-items: center; }
         .player-body { width: 100%; flex: 1; }
         .player-body iframe { width: 100%; height: 100%; border: none; }
         .btn-close { color: #fff; font-size: 20px; background: none; border: none; cursor: pointer; }
+        
+        .image-modal-body { width: 100%; flex: 1; display: flex; justify-content: center; align-items: center; padding: 10px; }
+        .image-modal-body img { max-width: 100%; max-height: 100%; object-fit: contain; pointer-events: none; }
     </style>
 </head>
 <body oncontextmenu="return false;">
+
+    <div class="screenshot-shield"></div>
 
     <div id="browserBlockOverlay">
         <i class="fa-solid fa-triangle-exclamation"></i>
@@ -238,7 +252,7 @@
         </div>
 
         <div id="galleryView" class="app-view">
-            <div class="section-header">رەسىملەر ئامبىرى</div>
+            <div class="section-header">رەسىملەر ئامبىرى (چوڭايتىپ كۆرۈش ئۈچۈن بېسىڭ)</div>
             <div class="gallery-grid" id="galleryContainer"></div>
         </div>
 
@@ -275,7 +289,7 @@
                 <button type="submit" class="btn-submit" style="background:#2196f3;">رەسىم يوللاش</button>
             </form>
 
-            <div class="section-header" style="margin-top: 25px;">توربەتكە كىرگەن ئابونتلار (<span id="userCount">0</span>) - (ئۇچۇر قىلىش ئۈچۈن بېسىڭ)</div>
+            <div class="section-header" style="margin-top: 25px;">توربەتكە كىرگەن ئابونتلار (<span id="userCount">0</span>) - (VIP قىلىش ياكى ئۆچۈرۈش)</div>
             <div class="users-list" id="registeredUsersContainer"></div>
         </div>
 
@@ -294,6 +308,17 @@
             <button class="btn-close" onclick="closeVideo()"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <div class="player-body" id="playerContainer"></div>
+    </div>
+
+    <!-- 🔍 رەسىملەرنى چوڭايتىپ كۆرسىتىش كۆزنىكى (Modal) -->
+    <div id="imageModal" class="image-modal">
+        <div class="image-modal-header">
+            <span id="imageModalTitle" style="font-size: 13px; font-weight: 600;"></span>
+            <button class="btn-close" onclick="closeImageViewer()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="image-modal-body">
+            <img id="modalFullImage" src="" alt="Zoomed Image">
+        </div>
     </div>
 
     <script>
@@ -397,6 +422,18 @@
                 allChats = data ? Object.values(data) : [];
                 renderChatMessages();
             });
+
+            // Firebase دىن VIP ئەزالار تىزىملىكىنى ئوقۇش
+            window.dbOnValue(window.dbRef(window.db, 'vip_users'), (snapshot) => {
+                const data = snapshot.val() || {};
+                let vipIds = [];
+                for(let id in data) {
+                    if(data[id] === true) vipIds.push(String(id));
+                }
+                localStorage.setItem('uyghur_vip_users', JSON.stringify(vipIds));
+                checkVipStatusUI();
+                renderAdminUserList();
+            });
         }
 
         function checkVipStatusUI() {
@@ -413,20 +450,28 @@
             } catch(e) { return false; }
         }
 
+        // 👑 باشقۇرغۇچى خالىغان ئابونتقا VIP بېرەلەيدۇ ياكى ئېلىۋېتەلەيدۇ
         function toggleUserVipStatus(userId) {
             if (!currentUser?.isAdmin) return;
             let vipUsers = JSON.parse(localStorage.getItem('uyghur_vip_users')) || [];
             const strId = String(userId);
+            let newStatus = false;
+            
             if (vipUsers.includes(strId)) {
                 vipUsers = vipUsers.filter(id => id !== strId);
+                newStatus = false;
             } else {
                 vipUsers.push(strId);
+                newStatus = true;
             }
-            localStorage.setItem('uyghur_vip_users', JSON.stringify(vipUsers));
-            renderAdminUserList();
-            checkVipStatusUI();
             
-            window.dbSet(window.dbRef(window.db, 'vip_users/' + strId), vipUsers.includes(strId));
+            localStorage.setItem('uyghur_vip_users', JSON.stringify(vipUsers));
+            
+            // Firebase غا ساقلاش ئارقىلىق دەرھال يېڭىلاش
+            window.dbSet(window.dbRef(window.db, 'vip_users/' + strId), newStatus).then(() => {
+                renderAdminUserList();
+                checkVipStatusUI();
+            });
         }
 
         function openChannelLink() {
@@ -525,11 +570,23 @@
             alert('رەسىم يوللاندى!');
         }
 
+        // 🔍 رەسىملەرنى چوڭايتىپ كۆرسىتىش פונкციيىسى
+        function openImageViewer(url, title) {
+            document.getElementById('imageModalTitle').innerText = title;
+            document.getElementById('modalFullImage').src = url;
+            document.getElementById('imageModal').style.display = 'flex';
+        }
+
+        function closeImageViewer() {
+            document.getElementById('imageModal').style.display = 'none';
+            document.getElementById('modalFullImage').src = '';
+        }
+
         function renderGallery() {
             const container = document.getElementById('galleryContainer');
             if (!container) return;
             container.innerHTML = allPhotos.map(p => `
-                <div class="gallery-card" oncontextmenu="return false;">
+                <div class="gallery-card" oncontextmenu="return false;" onclick="openImageViewer('${p.url}', '${p.title}')">
                     ${currentUser?.isAdmin ? `<button class="btn-delete-item" onclick="event.stopPropagation(); deletePhoto(${p.id})"><i class="fa-solid fa-xmark"></i></button>` : ''}
                     <img src="${p.url}" alt="${p.title}" oncontextmenu="return false;">
                     <div class="gallery-card-title">${p.title}</div>
@@ -566,15 +623,6 @@
             handleSearch();
         }
 
-        function contactUser(username, userId) {
-            if (!currentUser?.isAdmin) return;
-            if (username && username.trim() !== '') {
-                window.open(`https://t.me/${username}`, '_blank');
-            } else {
-                window.open(`tg://user?id=${userId}`, '_blank');
-            }
-        }
-
         function renderAdminUserList() {
             const container = document.getElementById('registeredUsersContainer');
             if (!container) return;
@@ -584,13 +632,13 @@
             container.innerHTML = allUsers.map(u => {
                 const vip = isUserVip(u.id);
                 return `
-                    <div class="user-item-card" onclick="contactUser('${u.username || ''}', '${u.id}')">
+                    <div class="user-item-card">
                         <div class="user-item-placeholder">${u.name.charAt(0)}</div>
                         <div class="user-item-info">
                             <strong>${u.name} ${vip ? '👑' : ''}</strong>
-                            <span>${u.username ? '@' + u.username : 'ID: ' + u.id} (ئۇچۇر قىلىش)</span>
+                            <span>${u.username ? '@' + u.username : 'ID: ' + u.id}</span>
                         </div>
-                        <button class="btn-vip-toggle" style="background:${vip ? '#f44336' : '#ff9800'}; color:#fff;" onclick="event.stopPropagation(); toggleUserVipStatus('${u.id}')">${vip ? 'VIP ئۆچۈرۈش' : 'VIP قىلىش'}</button>
+                        <button class="btn-vip-toggle" style="background:${vip ? '#f44336' : '#ff9800'}; color:#fff;" onclick="toggleUserVipStatus('${u.id}')">${vip ? 'VIP چىقىرىش' : 'VIP قىلىش'}</button>
                     </div>
                 `;
             }).join('');
@@ -616,8 +664,9 @@
 
         function playMovie(title, url, type) {
             if (type === 'vip' && !isUserVip(currentUser?.id)) {
-                if (confirm('بۇ VIP فىلىم! كۆرۈش ئۈچۈن سىزدە VIP سالاھىيىتى بولۇشى كېرەك. باشقۇرغۇچىغا ئۇچۇر قىلىپ VIP بولۇشنى خالامسىز؟')) {
-                    window.open(`https://t.me/nasrulla`, '_blank');
+                // تەلەپ بويىچە @Serdar98989898 غا ئۇچۇر قىلىدىغان قىلىندى
+                if (confirm('بۇ VIP فىلىم! كۆرۈش ئۈچۈن @Serdar98989898 غا ئۇچۇر قىلىپ VIP سالاھىيىتى ئېلىشىڭىز كېرەك. ھازىر ئۇچۇر قىلامسىز؟')) {
+                    window.open(`https://t.me/Serdar98989898`, '_blank');
                 }
                 return;
             }
