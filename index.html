@@ -424,6 +424,9 @@
             localStorage.setItem('uyghur_vip_users', JSON.stringify(vipUsers));
             renderAdminUserList();
             checkVipStatusUI();
+            
+            // Firebase دەمۇ ساقلاش (بارلىق ئابونتلارنىڭ VIP ھالىتىنى ماس قەدەملەش ئۈچۈن)
+            window.dbSet(window.dbRef(window.db, 'vip_users/' + strId), vipUsers.includes(strId));
         }
 
         function openChannelLink() {
@@ -527,7 +530,7 @@
             if (!container) return;
             container.innerHTML = allPhotos.map(p => `
                 <div class="gallery-card">
-                    ${currentUser?.isAdmin ? `<button class="btn-delete-item" onclick="deletePhoto(${p.id})"><i class="fa-solid fa-xmark"></i></button>` : ''}
+                    ${currentUser?.isAdmin ? `<button class="btn-delete-item" onclick="event.stopPropagation(); deletePhoto(${p.id})"><i class="fa-solid fa-xmark"></i></button>` : ''}
                     <img src="${p.url}" alt="${p.title}">
                     <div class="gallery-card-title">${p.title}</div>
                 </div>
@@ -549,7 +552,7 @@
             if (!container) return;
             container.innerHTML = allMovies.map(m => `
                 <div class="movie-card">
-                    ${currentUser?.isAdmin ? `<button class="btn-delete-item" onclick="deleteMovie(${m.id})"><i class="fa-solid fa-xmark"></i></button>` : ''}
+                    ${currentUser?.isAdmin ? `<button class="btn-delete-item" onclick="event.stopPropagation(); deleteMovie(${m.id})"><i class="fa-solid fa-xmark"></i></button>` : ''}
                     <div onclick="playMovie('${m.title}', '${m.archiveUrl}', '${m.type}')">
                         <div class="${m.type === 'vip' ? 'movie-badge-vip' : 'movie-badge-free'}">${m.type === 'vip' ? '👑 VIP' : 'ھەقسىز'}</div>
                         <img src="${m.poster}" alt="${m.title}">
@@ -587,7 +590,7 @@
                             <strong>${u.name} ${vip ? '👑' : ''}</strong>
                             <span>${u.username ? '@' + u.username : 'ID: ' + u.id} (ئۇچۇر قىلىش)</span>
                         </div>
-                        <button class="btn-vip-toggle" onclick="event.stopPropagation(); toggleUserVipStatus('${u.id}')">${vip ? 'VIP ئۆچۈرۈش' : 'VIP قىلىش'}</button>
+                        <button class="btn-vip-toggle" style="background:${vip ? '#f44336' : '#ff9800'}; color:#fff;" onclick="event.stopPropagation(); toggleUserVipStatus('${u.id}')">${vip ? 'VIP ئۆچۈرۈش' : 'VIP قىلىش'}</button>
                     </div>
                 `;
             }).join('');
@@ -613,7 +616,10 @@
 
         function playMovie(title, url, type) {
             if (type === 'vip' && !isUserVip(currentUser?.id)) {
-                alert('بۇ VIP فىلىم! كۆرۈش ئۈچۈن سىزدە VIP سالاھىيىتى بولۇشى كېرەك.');
+                if (confirm('بۇ VIP فىلىم! كۆرۈش ئۈچۈن سىزدە VIP سالاھىيىتى بولۇشى كېرەك. باشقۇرغۇچىغا ئۇچۇر قىلىپ VIP بولۇشنى خالامسىز؟')) {
+                    // باشقۇرغۇچىنىڭ ئات دىسى ياكى ID سى ئارقىلىق بىۋاسىتە خەۋەرلىشىش (ئەگەر ئات دىسى بولسا ئۇلانما ئېچىلىدۇ)
+                    window.open(`https://t.me/nasrulla`, '_blank');
+                }
                 return;
             }
             document.getElementById('playerTitle').innerText = title;
@@ -631,7 +637,7 @@
             const filtered = allMovies.filter(m => m.title.toLowerCase().includes(query));
             document.getElementById('searchMovieList').innerHTML = filtered.map(m => `
                 <div class="movie-card">
-                    ${currentUser?.isAdmin ? `<button class="btn-delete-item" onclick="deleteMovie(${m.id})"><i class="fa-solid fa-xmark"></i></button>` : ''}
+                    ${currentUser?.isAdmin ? `<button class="btn-delete-item" onclick="event.stopPropagation(); deleteMovie(${m.id})"><i class="fa-solid fa-xmark"></i></button>` : ''}
                     <div onclick="playMovie('${m.title}', '${m.archiveUrl}', '${m.type}')">
                         <div class="${m.type === 'vip' ? 'movie-badge-vip' : 'movie-badge-free'}">${m.type === 'vip' ? '👑 VIP' : 'ھەقسىز'}</div>
                         <img src="${m.poster}" alt="${m.title}">
