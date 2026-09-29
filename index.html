@@ -12,6 +12,41 @@
     <title>ئۇيغۇر كىنو - Telegram Mini App</title>
 
     <script src="https://telegram.org/js/telegram-web-app.js?v=3.0"></script>
+    
+    <!-- 🔥 Firebase SDKs بىلەن تەڭشەك -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, set, get, child, remove, onValue, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        // 🔥 سىزنىڭ Firebase ئۇچۇرلىرىڭىز بىرلەشتۈرۈلدى
+        const firebaseConfig = {
+            apiKey: "AIzaSyDYDqUVN5SUUIsxuvrB3A4S-zoXDPVzx5g",
+            authDomain: "uyghur-98.firebaseapp.com",
+            databaseURL: "https://uyghur-98-default-rtdb.firebaseio.com",
+            projectId: "uyghur-98",
+            storageBucket: "uyghur-98.firebasestorage.app",
+            messagingSenderId: "166247442237",
+            appId: "1:166247442237:web:531c1ff4be2c9c0ae3c754"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // پۈتۈن פונكسىيەلەرنى دۇنياۋى (global) قىلىش
+        window.db = db;
+        window.dbRef = ref;
+        window.dbSet = set;
+        window.dbGet = get;
+        window.dbChild = child;
+        window.dbRemove = remove;
+        window.dbOnValue = onValue;
+        window.dbPush = push;
+
+        if(window.initAppAfterFirebase) {
+            window.initAppAfterFirebase();
+        }
+    </script>
+
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -125,155 +160,30 @@
         .user-item-info span { font-size: 11px; color: #40c4ff; }
         .btn-vip-toggle { background: #ff9800; color: #000; border: none; padding: 5px 10px; font-size: 10px; font-weight: bold; border-radius: 6px; cursor: pointer; }
 
-        /* 🌟 كۆركەم ۋە راۋان پاراڭلىشىش بېتى (Modern Chat Styles) */
         .chat-container {
-            display: flex;
-            flex-direction: column;
-            height: calc(100vh - 150px);
+            display: flex; flex-direction: column; height: calc(100vh - 150px);
             background: linear-gradient(180deg, #161618 0%, #0f0f0f 100%);
-            border-radius: var(--radius);
-            overflow: hidden;
-            border: 1px solid var(--border-color);
+            border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border-color);
             box-shadow: 0 8px 24px rgba(0,0,0,0.5);
         }
-
-        .chat-messages {
-            flex: 1;
-            padding: 16px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            scroll-behavior: smooth;
-        }
-
-        .chat-msg-item {
-            display: flex;
-            gap: 10px;
-            align-items: flex-end;
-            max-width: 80%;
-            animation: fadeInMsg 0.25s ease-out;
-        }
-
-        @keyframes fadeInMsg {
-            from { opacity: 0; transform: translateY(8px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .chat-msg-item.my-msg {
-            align-self: flex-end;
-            flex-direction: row-reverse;
-        }
-
-        .chat-msg-avatar, .chat-msg-avatar-ph {
-            width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
-        }
+        .chat-messages { flex: 1; padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; scroll-behavior: smooth; }
+        .chat-msg-item { display: flex; gap: 10px; align-items: flex-end; max-width: 80%; }
+        .chat-msg-item.my-msg { align-self: flex-end; flex-direction: row-reverse; }
+        .chat-msg-avatar, .chat-msg-avatar-ph { width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0; }
         .chat-msg-avatar { object-fit: cover; border: 1.5px solid var(--border-color); }
         .chat-msg-avatar-ph { background: var(--primary-color); display: flex; align-items: center; justify-content: center; font-size: 14px; color: #fff; font-weight: bold; }
-
-        .chat-msg-body {
-            background: #252528;
-            padding: 10px 14px;
-            border-radius: 16px 16px 16px 4px;
-            position: relative;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-        }
-
-        .chat-msg-item.my-msg .chat-msg-body {
-            background: #e50914;
-            border-radius: 16px 16px 4px 16px;
-        }
-
-        .chat-msg-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 4px;
-        }
-
-        .chat-msg-author {
-            font-size: 11px;
-            font-weight: 700;
-            color: #40c4ff;
-        }
-
-        .chat-msg-item.my-msg .chat-msg-author {
-            color: #ffe082;
-        }
-
-        /* 🗑️ باشقۇرغۇچى ئۈچۈن ئۆچۈرۈش كۇنپۇكى */
-        .btn-delete-msg {
-            background: none;
-            border: none;
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 11px;
-            cursor: pointer;
-            padding: 0 3px;
-            transition: color 0.2s;
-        }
-        .btn-delete-msg:hover {
-            color: #ff5252;
-        }
-
-        .chat-msg-text {
-            font-size: 13.5px;
-            line-height: 1.4;
-            word-break: break-word;
-            color: #f1f1f1;
-        }
-
-        .chat-msg-time {
-            font-size: 9.5px;
-            color: rgba(255, 255, 255, 0.5);
-            margin-top: 4px;
-            text-align: left;
-        }
-
-        .chat-input-bar {
-            padding: 12px 14px;
-            background: #1c1c1e;
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            border-top: 1px solid var(--border-color);
-        }
-
-        .chat-input-bar input {
-            flex: 1;
-            padding: 11px 14px;
-            background: #2c2c2e;
-            border: 1px solid var(--border-color);
-            border-radius: 20px;
-            color: #fff;
-            font-size: 13.5px;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-
-        .chat-input-bar input:focus {
-            border-color: var(--primary-color);
-        }
-
-        .chat-input-bar button {
-            background: var(--primary-color);
-            border: none;
-            color: #fff;
-            width: 42px;
-            height: 42px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: 15px;
-            box-shadow: 0 2px 8px rgba(229, 9, 20, 0.4);
-            transition: transform 0.1s;
-        }
-
-        .chat-input-bar button:active {
-            transform: scale(0.92);
-        }
+        .chat-msg-body { background: #252528; padding: 10px 14px; border-radius: 16px 16px 16px 4px; position: relative; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
+        .chat-msg-item.my-msg .chat-msg-body { background: #e50914; border-radius: 16px 16px 4px 16px; }
+        .chat-msg-header { display: flex; justify-content: space-between; align-items: center; gap: 15px; margin-bottom: 4px; }
+        .chat-msg-author { font-size: 11px; font-weight: 700; color: #40c4ff; }
+        .chat-msg-item.my-msg .chat-msg-author { color: #ffe082; }
+        .btn-delete-msg { background: none; border: none; color: rgba(255, 255, 255, 0.6); font-size: 11px; cursor: pointer; padding: 0 3px; }
+        .btn-delete-msg:hover { color: #ff5252; }
+        .chat-msg-text { font-size: 13.5px; line-height: 1.4; word-break: break-word; color: #f1f1f1; }
+        .chat-msg-time { font-size: 9.5px; color: rgba(255, 255, 255, 0.5); margin-top: 4px; text-align: left; }
+        .chat-input-bar { padding: 12px 14px; background: #1c1c1e; display: flex; gap: 10px; align-items: center; border-top: 1px solid var(--border-color); }
+        .chat-input-bar input { flex: 1; padding: 11px 14px; background: #2c2c2e; border: 1px solid var(--border-color); border-radius: 20px; color: #fff; font-size: 13.5px; outline: none; }
+        .chat-input-bar button { background: var(--primary-color); border: none; color: #fff; width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 15px; }
 
         .bottom-nav {
             position: fixed; bottom: 0; left: 0; right: 0; height: 60px;
@@ -285,7 +195,7 @@
         .nav-item.active { color: var(--primary-color); }
         .admin-nav-item { display: none; }
 
-        .player-modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); z-index: 2000; flex-direction: column; justify-content: flex-start; }
+        .player-modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); z-index: 2000; flex-direction: column; justify-content: flex-start; align-items: center; }
         .player-header { width: 100%; padding: 12px; display: flex; justify-content: space-between; background: rgba(0,0,0,0.8); }
         .player-body { width: 100%; flex: 1; }
         .player-body iframe { width: 100%; height: 100%; border: none; }
@@ -331,7 +241,6 @@
             <div class="gallery-grid" id="galleryContainer"></div>
         </div>
 
-        <!-- 💬 زامانىۋى ۋە كۆركەم پاراڭلىشىش بېتى -->
         <div id="chatView" class="app-view">
             <div class="section-header">ئاممىۋى پاراڭلىشىش سورۇنى</div>
             <div class="chat-container">
@@ -388,19 +297,15 @@
 
     <script>
         const ADMIN_TELEGRAM_ID = "8739045571";
-        const BOT_USERNAME = "Uyghur98_bot";
         const tg = window.Telegram?.WebApp;
         let currentUser = null;
 
-        // BroadcastChannel ئارقىلىق ئۇچۇرلارنىڭ ھەممە ئابونتلاردا تەڭ يېڭىلىنىشى قاتارلىقلار كاپالەتكە ئىگە قىلىنىدۇ
-        const chatSyncChannel = new BroadcastChannel('uyghur_chat_sync_channel');
-        chatSyncChannel.onmessage = (event) => {
-            if (event.data === 'refresh_chat') {
-                renderChatMessages();
-            }
-        };
+        let allMovies = [];
+        let allPhotos = [];
+        let allUsers = [];
+        let allChats = [];
 
-        function initApp() {
+        window.initAppAfterFirebase = function() {
             try {
                 if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
                     currentUser = tg.initDataUnsafe.user;
@@ -434,13 +339,39 @@
                     document.getElementById('adminNavItem').style.display = 'flex';
                 }
 
-                renderHomeMovies();
-                renderGallery();
-                renderChatMessages();
-                renderAdminUserList();
+                setupFirebaseListeners();
+
             } catch(e) {
                 console.error(e);
             }
+        };
+
+        function setupFirebaseListeners() {
+            window.dbOnValue(window.dbRef(window.db, 'movies'), (snapshot) => {
+                const data = snapshot.val();
+                allMovies = data ? Object.values(data) : [
+                    { id: 1001, title: "ئالەم ئارا ساياھەت", poster: "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=400&q=80", archiveUrl: "https://archive.org/embed/Popeye_for_President", type: "free" }
+                ];
+                renderHomeMovies();
+            });
+
+            window.dbOnValue(window.dbRef(window.db, 'photos'), (snapshot) => {
+                const data = snapshot.val();
+                allPhotos = data ? Object.values(data) : [];
+                renderGallery();
+            });
+
+            window.dbOnValue(window.dbRef(window.db, 'users'), (snapshot) => {
+                const data = snapshot.val();
+                allUsers = data ? Object.values(data) : [];
+                renderAdminUserList();
+            });
+
+            window.dbOnValue(window.dbRef(window.db, 'chats'), (snapshot) => {
+                const data = snapshot.val();
+                allChats = data ? Object.values(data) : [];
+                renderChatMessages();
+            });
         }
 
         function checkVipStatusUI() {
@@ -481,54 +412,49 @@
 
         function autoRegisterUser(user) {
             if (!user || !user.id) return;
-            let users = JSON.parse(localStorage.getItem('uyghur_tg_users')) || [];
-            if (!users.some(u => String(u.id) === String(user.id))) {
-                users.unshift({
-                    id: user.id,
-                    name: `${user.first_name || ''}`.trim(),
-                    username: user.username || '',
-                    photo_url: user.photo_url || null,
-                    date: new Date().toLocaleDateString()
-                });
-                localStorage.setItem('uyghur_tg_users', JSON.stringify(users));
-            }
+            const userRef = window.dbRef(window.db, 'users/' + user.id);
+            window.dbGet(userRef).then((snapshot) => {
+                if (!snapshot.exists()) {
+                    window.dbSet(userRef, {
+                        id: user.id,
+                        name: `${user.first_name || ''}`.trim(),
+                        username: user.username || '',
+                        photo_url: user.photo_url || null,
+                        date: new Date().toLocaleDateString()
+                    });
+                }
+            });
         }
 
-        /* 💬 پاراڭلىشىش ئىقتىدارلىرى */
         function sendChatMessage() {
             const input = document.getElementById('chatInputText');
             if (!input || !input.value.trim()) return;
-            let chats = JSON.parse(localStorage.getItem('uyghur_app_chat')) || [];
-            chats.push({
-                id: Date.now(),
+            
+            const chatId = Date.now();
+            const msgData = {
+                id: chatId,
                 userId: currentUser.id,
                 name: currentUser.first_name,
                 photo: currentUser.photo_url,
                 text: input.value.trim(),
                 time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
-            });
-            localStorage.setItem('uyghur_app_chat', JSON.stringify(chats));
+            };
+
+            window.dbSet(window.dbRef(window.db, 'chats/' + chatId), msgData);
             input.value = '';
-            renderChatMessages();
-            chatSyncChannel.postMessage('refresh_chat');
         }
 
         function deleteChatMessage(msgId) {
             if (String(currentUser?.id) !== String(ADMIN_TELEGRAM_ID)) return;
-            let chats = JSON.parse(localStorage.getItem('uyghur_app_chat')) || [];
-            chats = chats.filter(c => c.id !== msgId);
-            localStorage.setItem('uyghur_app_chat', JSON.stringify(chats));
-            renderChatMessages();
-            chatSyncChannel.postMessage('refresh_chat');
+            window.dbRemove(window.dbRef(window.db, 'chats/' + msgId));
         }
 
         function renderChatMessages() {
             const container = document.getElementById('chatMessageList');
             if (!container) return;
-            const chats = JSON.parse(localStorage.getItem('uyghur_app_chat')) || [];
             const isAdmin = String(currentUser?.id) === String(ADMIN_TELEGRAM_ID);
 
-            container.innerHTML = chats.map(c => {
+            container.innerHTML = allChats.map(c => {
                 const isMine = String(c.userId) === String(currentUser?.id);
                 return `
                     <div class="chat-msg-item ${isMine ? 'my-msg' : ''}">
@@ -551,21 +477,21 @@
             e.preventDefault();
             const title = document.getElementById('photoTitle').value;
             const url = document.getElementById('photoUrl').value;
-            let photos = JSON.parse(localStorage.getItem('uyghur_app_photos')) || [];
-            photos.unshift({ id: Date.now(), title, url });
-            localStorage.setItem('uyghur_app_photos', JSON.stringify(photos));
+            
+            const photoId = Date.now();
+            const photoData = { id: photoId, title, url };
+
+            window.dbSet(window.dbRef(window.db, 'photos/' + photoId), photoData);
             document.getElementById('addPhotoForm').reset();
             
-            renderGallery();
-            alert('رەسىم مۇۋەپپەقىيەتلىك يوللاندى ۋە رەسىملەر بەتىگە قوشۇلدى!');
+            alert('رەسىم مۇۋەپپەقىيەتلىك يوللاندى ۋە ھەممە ئادەمگە كۆرүндى!');
             switchView('galleryView', document.querySelectorAll('.nav-item')[2]);
         }
 
         function renderGallery() {
             const container = document.getElementById('galleryContainer');
             if (!container) return;
-            let photos = JSON.parse(localStorage.getItem('uyghur_app_photos')) || [];
-            container.innerHTML = photos.map(p => `
+            container.innerHTML = allPhotos.map(p => `
                 <div class="gallery-card">
                     <img src="${p.url}" alt="${p.title}">
                     <div class="gallery-card-title">${p.title}</div>
@@ -581,24 +507,12 @@
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             document.getElementById(viewId).classList.add('active');
             if (navElement) navElement.classList.add('active');
-
-            if (viewId === 'adminView') renderAdminUserList();
-            if (viewId === 'galleryView') renderGallery();
-            if (viewId === 'homeView') renderHomeMovies();
-            if (viewId === 'chatView') renderChatMessages();
-        }
-
-        function getMovies() {
-            return JSON.parse(localStorage.getItem('uyghur_movies')) || [
-                { id: 1001, title: "ئالەم ئارا ساياھەت", poster: "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=400&q=80", archiveUrl: "https://archive.org/embed/Popeye_for_President", type: "free" }
-            ];
         }
 
         function renderHomeMovies() {
             const container = document.getElementById('homeMovieList');
             if (!container) return;
-            const movies = getMovies();
-            container.innerHTML = movies.map(m => `
+            container.innerHTML = allMovies.map(m => `
                 <div class="movie-card" onclick="playMovie('${m.title}', '${m.archiveUrl}', '${m.type}')">
                     <div class="${m.type === 'vip' ? 'movie-badge-vip' : 'movie-badge-free'}">${m.type === 'vip' ? '👑 VIP' : 'ھەقسىز'}</div>
                     <img src="${m.poster}" alt="${m.title}">
@@ -610,16 +524,15 @@
         function renderAdminUserList() {
             const container = document.getElementById('registeredUsersContainer');
             if (!container) return;
-            let users = JSON.parse(localStorage.getItem('uyghur_tg_users')) || [];
             const countEl = document.getElementById('userCount');
-            if(countEl) countEl.innerText = users.length;
+            if(countEl) countEl.innerText = allUsers.length;
             
-            container.innerHTML = users.map(u => {
+            container.innerHTML = allUsers.map(u => {
                 const vip = isUserVip(u.id);
                 return `
                     <div class="user-item-card">
                         ${u.photo_url ? `<img src="${u.photo_url}" class="user-item-avatar">` : `<div class="user-item-placeholder">${u.name.charAt(0)}</div>`}
-                        <div class="user-item-info"><strong>${u.name} ${vip ? '👑' : ''}</strong><span>@${u.username || 'yوق'}</span></div>
+                        <div class="user-item-info"><strong>${u.name} ${vip ? '👑' : ''}</strong><span>@${u.username || 'يوق'}</span></div>
                         <button class="btn-vip-toggle" onclick="toggleUserVipStatus('${u.id}')">${vip ? 'VIP ئۆچۈرۈش' : 'VIP قىلىش'}</button>
                     </div>
                 `;
@@ -635,14 +548,13 @@
 
             if (archiveUrl.includes('/details/')) archiveUrl = archiveUrl.replace('/details/', '/embed/');
 
-            let movies = getMovies();
-            const id = Date.now();
-            movies.unshift({ id, title, poster, archiveUrl, type });
-            localStorage.setItem('uyghur_movies', JSON.stringify(movies));
+            const movieId = Date.now();
+            const movieData = { id: movieId, title, poster, archiveUrl, type };
+
+            window.dbSet(window.dbRef(window.db, 'movies/' + movieId), movieData);
             document.getElementById('addMovieForm').reset();
             
-            renderHomeMovies();
-            alert('فىلىم مۇۋەپپەقىيەتلىك توربەتكە يوللاندى ھەممە ئادەمگە كۆرۈندى!');
+            alert('فىلىم مۇۋەپپەقىيەتلىك توربەتكە يوللاندى ۋە ھەممە ئادەمگە دەرھال كۆرүндى!');
             switchView('homeView', document.querySelectorAll('.nav-item')[0]);
         }
 
@@ -663,8 +575,7 @@
 
         function handleSearch() {
             const query = document.getElementById('searchInput').value.toLowerCase().trim();
-            const movies = getMovies();
-            const filtered = movies.filter(m => m.title.toLowerCase().includes(query));
+            const filtered = allMovies.filter(m => m.title.toLowerCase().includes(query));
             document.getElementById('searchMovieList').innerHTML = filtered.map(m => `
                 <div class="movie-card" onclick="playMovie('${m.title}', '${m.archiveUrl}', '${m.type}')">
                     <div class="${m.type === 'vip' ? 'movie-badge-vip' : 'movie-badge-free'}">${m.type === 'vip' ? '👑 VIP' : 'ھەقسىز'}</div>
@@ -673,8 +584,6 @@
                 </div>
             `).join('');
         }
-
-        window.onload = initApp;
     </script>
 </body>
 </html>
