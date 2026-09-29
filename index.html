@@ -295,6 +295,7 @@
                 renderHomeMovies();
                 renderGallery();
                 renderChatMessages();
+                renderAdminUserList();
             } catch(e) {
                 console.error(e);
             }
@@ -393,8 +394,10 @@
             photos.unshift({ id: Date.now(), title, url });
             localStorage.setItem('uyghur_app_photos', JSON.stringify(photos));
             document.getElementById('addPhotoForm').reset();
+            
             renderGallery();
-            alert('رەسىم قوشۇلدى!');
+            alert('رەسىم مۇۋەپپەقىيەتلىك يوللاندى ۋە رەسىملەر بەتىگە قوشۇلدى!');
+            switchView('galleryView', document.querySelectorAll('.nav-item')[2]);
         }
 
         function renderGallery() {
@@ -420,6 +423,7 @@
 
             if (viewId === 'adminView') renderAdminUserList();
             if (viewId === 'galleryView') renderGallery();
+            if (viewId === 'homeView') renderHomeMovies();
             if (viewId === 'chatView') renderChatMessages();
         }
 
@@ -446,7 +450,9 @@
             const container = document.getElementById('registeredUsersContainer');
             if (!container) return;
             let users = JSON.parse(localStorage.getItem('uyghur_tg_users')) || [];
-            document.getElementById('userCount').innerText = users.length;
+            const countEl = document.getElementById('userCount');
+            if(countEl) countEl.innerText = users.length;
+            
             container.innerHTML = users.map(u => {
                 const vip = isUserVip(u.id);
                 return `
@@ -475,7 +481,7 @@
             document.getElementById('addMovieForm').reset();
             
             renderHomeMovies();
-            alert('فىلىم مۇۋەپپەقىيەتلىك توربەتكە يوللاندى!');
+            alert('فىلىم مۇۋەپپەقىيەتلىك توربەتكە يوللاندى ھەممە ئادەمگە كۆرۈندى!');
             switchView('homeView', document.querySelectorAll('.nav-item')[0]);
         }
 
