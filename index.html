@@ -74,7 +74,6 @@
             user-select: none;
         }
 
-        /* تېلېگراممىدىن باشقا جايلاردا ئېچىلغاندا چەكلەش ئېكرانى */
         #browserBlockOverlay {
             display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: #0f0f0f; z-index: 99999;
@@ -139,13 +138,16 @@
         .movie-badge-vip { position: absolute; top: 6px; right: 6px; background: linear-gradient(45deg, #ffd700, #ff9800); color: #000; font-size: 9px; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
         .movie-badge-free { position: absolute; top: 6px; right: 6px; background: #4caf50; color: #fff; font-size: 9px; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
 
+        .btn-delete-item { position: absolute; top: 6px; left: 6px; background: rgba(229, 9, 20, 0.9); color: white; border: none; width: 24px; height: 24px; border-radius: 50%; font-size: 11px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 5; }
+
         .form-group { margin-bottom: 12px; text-align: right; }
         .form-group label { display: block; font-size: 11px; color: var(--text-muted); margin-bottom: 5px; }
         .form-control { width: 100%; padding: 10px 12px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; font-size: 13px; outline: none; }
         .btn-submit { width: 100%; padding: 12px; background: var(--primary-color); border: none; border-radius: 8px; color: white; font-weight: 700; font-size: 14px; cursor: pointer; margin-top: 10px; }
 
         .users-list { background: var(--card-bg); border-radius: var(--radius); padding: 10px; margin-top: 15px; max-height: 350px; overflow-y: auto; }
-        .user-item-card { display: flex; align-items: center; gap: 10px; padding: 10px; border-bottom: 1px solid var(--border-color); border-radius: 8px; }
+        .user-item-card { display: flex; align-items: center; gap: 10px; padding: 10px; border-bottom: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; transition: background 0.2s; }
+        .user-item-card:hover { background: #252528; }
         .user-item-placeholder { background: #333; width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #fff; font-size: 16px; }
         .user-item-info { flex: 1; text-align: right; }
         .user-item-info strong { font-size: 13px; color: #fff; display: block; }
@@ -194,7 +196,6 @@
 </head>
 <body>
 
-    <!-- تېلېگراممىدىن باشقا توربەتلەردە ئېچىشنى قەتئىي چەكلەش ئېكرانى -->
     <div id="browserBlockOverlay">
         <i class="fa-solid fa-triangle-exclamation"></i>
         <h2>پەقەت تېلېگرامما مىنى ئەپ ئارقىلىقلا ئاچقىلى بولىدۇ</h2>
@@ -204,7 +205,7 @@
     <div id="telegramOnlyOverlay">
         <i class="fa-brands fa-telegram"></i>
         <h2>كىنو قانىلىمىزغا ئەزا بولۇڭ</h2>
-        <p>فىلىملەرنى كۆرۈش ئۈچۈن قانىلىمىزغا ئەزا بولۇپ قويۇڭ!</p>
+        <p>فىلىملەرنى كۆرۈش ئۈچۈن قانىلىمىزға ئەزا بولۇپ قويۇڭ!</p>
         <button class="btn-join-channel" onclick="openChannelLink()">قانالغا كىرىش (@xax9898)</button>
         <button class="btn-join-channel" style="background:#333; margin-top:10px;" onclick="closeChannelPrompt()">ئەزا بولدۇم (داۋاملاشتۇرۇش)</button>
     </div>
@@ -251,7 +252,6 @@
             </div>
         </div>
 
-        <!-- پەقەت nasrulla ياكى 8739045571 غىلا كۆرۈنىدىغان باشقۇرۇش مەنزىرىسى -->
         <div id="adminView" class="app-view">
             <div class="section-header">توربەتكە فىلىم يوللاش</div>
             <form id="addMovieForm" onsubmit="saveMovie(event)">
@@ -274,7 +274,7 @@
                 <button type="submit" class="btn-submit" style="background:#2196f3;">رەسىم يوللاش</button>
             </form>
 
-            <div class="section-header" style="margin-top: 25px;">كىرگەن ئابونتلار (<span id="userCount">0</span>)</div>
+            <div class="section-header" style="margin-top: 25px;">توربەتكە كىرگەن ئابونتلار (<span id="userCount">0</span>) - (ئۇچۇر قىلىش ئۈچۈن بېسىڭ)</div>
             <div class="users-list" id="registeredUsersContainer"></div>
         </div>
 
@@ -303,7 +303,6 @@
         let allChats = [];
 
         function checkTelegramEnvironment() {
-            // تېلېگرامما مۇھىتىدا ئىكەنلىكىنى تەكشۈرۈش
             const isTelegram = window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user;
             if (!isTelegram) {
                 document.getElementById('browserBlockOverlay').style.display = 'flex';
@@ -320,8 +319,6 @@
             if (tgUser && tgUser.id) {
                 const fullName = (tgUser.first_name || '') + (tgUser.last_name ? ' ' + tgUser.last_name : '');
                 const userIdStr = String(tgUser.id);
-                
-                // 🔥 پەقەت nasrulla ياكى 8739045571 بولغاندىلا باشقۇرغۇچى ھالىتى بېرىلىدۇ
                 const isAdmin = (fullName.toLowerCase().trim() === 'nasrulla' || userIdStr === '8739045571');
 
                 currentUser = {
@@ -359,7 +356,6 @@
 
                 checkVipStatusUI();
 
-                // پەقەت ئالاھىدە ئابونتغىلا باشقۇرۇش كۇنۇپكىسى كۆرۈنىدۇ
                 if (currentUser.isAdmin) {
                     document.getElementById('adminNavItem').style.display = 'flex';
                     document.getElementById('headerRoleBadge').innerText = '👑 باشقۇرغۇچى';
@@ -380,6 +376,7 @@
                 const data = snapshot.val();
                 allMovies = data ? Object.values(data) : [];
                 renderHomeMovies();
+                renderSearchMovies();
             });
 
             window.dbOnValue(window.dbRef(window.db, 'photos'), (snapshot) => {
@@ -441,15 +438,13 @@
             if (!user || !user.id) return;
             const userRef = window.dbRef(window.db, 'users/' + user.id);
             window.dbGet(userRef).then((snapshot) => {
-                if (!snapshot.exists()) {
-                    window.dbSet(userRef, {
-                        id: user.id,
-                        name: user.first_name,
-                        username: user.username,
-                        isAdmin: user.isAdmin || false,
-                        date: new Date().toLocaleDateString()
-                    });
-                }
+                window.dbSet(userRef, {
+                    id: user.id,
+                    name: user.first_name,
+                    username: user.username || '',
+                    isAdmin: user.isAdmin || false,
+                    date: new Date().toLocaleDateString()
+                });
             });
         }
 
@@ -473,6 +468,20 @@
         function deleteChatMessage(msgId) {
             if (!currentUser?.isAdmin) return;
             window.dbRemove(window.dbRef(window.db, 'chats/' + msgId));
+        }
+
+        function deleteMovie(movieId) {
+            if (!currentUser?.isAdmin) return;
+            if (confirm('بۇ فىلىمنى ئۆچۈرேمسىز؟')) {
+                window.dbRemove(window.dbRef(window.db, 'movies/' + movieId));
+            }
+        }
+
+        function deletePhoto(photoId) {
+            if (!currentUser?.isAdmin) return;
+            if (confirm('بۇ رەسىمنى ئۆچۈرەمسىز؟')) {
+                window.dbRemove(window.dbRef(window.db, 'photos/' + photoId));
+            }
         }
 
         function renderChatMessages() {
@@ -509,9 +518,7 @@
 
             window.dbSet(window.dbRef(window.db, 'photos/' + photoId), photoData);
             document.getElementById('addPhotoForm').reset();
-            
-            alert('رەسىم دەرھال يوللاندى ۋە ئابونتلارغا كۆرۈندى!');
-            switchView('galleryView', document.querySelectorAll('.nav-item')[2]);
+            alert('رەسىم يوللاندى!');
         }
 
         function renderGallery() {
@@ -519,6 +526,7 @@
             if (!container) return;
             container.innerHTML = allPhotos.map(p => `
                 <div class="gallery-card">
+                    ${currentUser?.isAdmin ? `<button class="btn-delete-item" onclick="deletePhoto(${p.id})"><i class="fa-solid fa-xmark"></i></button>` : ''}
                     <img src="${p.url}" alt="${p.title}">
                     <div class="gallery-card-title">${p.title}</div>
                 </div>
@@ -539,12 +547,28 @@
             const container = document.getElementById('homeMovieList');
             if (!container) return;
             container.innerHTML = allMovies.map(m => `
-                <div class="movie-card" onclick="playMovie('${m.title}', '${m.archiveUrl}', '${m.type}')">
-                    <div class="${m.type === 'vip' ? 'movie-badge-vip' : 'movie-badge-free'}">${m.type === 'vip' ? '👑 VIP' : 'ھەقسىز'}</div>
-                    <img src="${m.poster}" alt="${m.title}">
-                    <div class="movie-card-info"><div class="movie-card-title">${m.title}</div></div>
+                <div class="movie-card">
+                    ${currentUser?.isAdmin ? `<button class="btn-delete-item" onclick="deleteMovie(${m.id})"><i class="fa-solid fa-xmark"></i></button>` : ''}
+                    <div onclick="playMovie('${m.title}', '${m.archiveUrl}', '${m.type}')">
+                        <div class="${m.type === 'vip' ? 'movie-badge-vip' : 'movie-badge-free'}">${m.type === 'vip' ? '👑 VIP' : 'ھەقسىز'}</div>
+                        <img src="${m.poster}" alt="${m.title}">
+                        <div class="movie-card-info"><div class="movie-card-title">${m.title}</div></div>
+                    </div>
                 </div>
             `).join('');
+        }
+
+        function renderSearchMovies() {
+            handleSearch();
+        }
+
+        function contactUser(username, userId) {
+            if (!currentUser?.isAdmin) return;
+            if (username && username.trim() !== '') {
+                window.open(`https://t.me/${username}`, '_blank');
+            } else {
+                window.open(`tg://user?id=${userId}`, '_blank');
+            }
         }
 
         function renderAdminUserList() {
@@ -556,10 +580,13 @@
             container.innerHTML = allUsers.map(u => {
                 const vip = isUserVip(u.id);
                 return `
-                    <div class="user-item-card">
+                    <div class="user-item-card" onclick="contactUser('${u.username || ''}', '${u.id}')">
                         <div class="user-item-placeholder">${u.name.charAt(0)}</div>
-                        <div class="user-item-info"><strong>${u.name} ${vip ? '👑' : ''}</strong><span>${u.isAdmin ? 'باشقۇرغۇچى' : 'ئابونت'}</span></div>
-                        <button class="btn-vip-toggle" onclick="toggleUserVipStatus('${u.id}')">${vip ? 'VIP ئۆچۈرۈش' : 'VIP قىلىش'}</button>
+                        <div class="user-item-info">
+                            <strong>${u.name} ${vip ? '👑' : ''}</strong>
+                            <span>${u.username ? '@' + u.username : 'ID: ' + u.id} (ئۇچۇر قىلىش)</span>
+                        </div>
+                        <button class="btn-vip-toggle" onclick="event.stopPropagation(); toggleUserVipStatus('${u.id}')">${vip ? 'VIP ئۆچۈرۈش' : 'VIP قىلىش'}</button>
                     </div>
                 `;
             }).join('');
@@ -580,9 +607,7 @@
 
             window.dbSet(window.dbRef(window.db, 'movies/' + movieId), movieData);
             document.getElementById('addMovieForm').reset();
-            
-            alert('فىلىم دەرھال يوللاندى ۋە ئابونتلارغا تارقىتىلدى!');
-            switchView('homeView', document.querySelectorAll('.nav-item')[0]);
+            alert('فىلىم يوللاندى!');
         }
 
         function playMovie(title, url, type) {
