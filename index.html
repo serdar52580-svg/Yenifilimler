@@ -11,12 +11,7 @@
 
     <title>ئۇيغۇر كىنو - Telegram Mini App</title>
 
-    <!-- Telegram Web App SDK JavaScript Library -->
-    <script src="https://telegram.org/js/telegram-web-app.js?v=2.0"></script>
-
-    <!-- Google Fonts & FontAwesome -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <script src="https://telegram.org/js/telegram-web-app.js?v=3.0"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -34,9 +29,7 @@
         }
 
         * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+            margin: 0; padding: 0; box-sizing: border-box;
             font-family: 'Noto Sans Arabic', -apple-system, BlinkMacSystemFont, sans-serif;
             -webkit-tap-highlight-color: transparent;
         }
@@ -49,13 +42,11 @@
             user-select: none;
         }
 
-        /* Access Restriction Overlay Popup */
         #telegramOnlyOverlay {
             display: none;
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(15, 15, 15, 0.98);
-            backdrop-filter: blur(10px);
             z-index: 9999;
             flex-direction: column;
             justify-content: center;
@@ -69,392 +60,134 @@
         #telegramOnlyOverlay p { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; }
 
         .btn-join-channel {
-            display: inline-block;
-            background: #24A1DE;
-            color: white;
-            padding: 12px 24px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: bold;
-            font-size: 14px;
-            cursor: pointer;
-            border: none;
-            margin-top: 10px;
-            width: 100%;
-            max-width: 280px;
+            display: inline-block; background: #24A1DE; color: white;
+            padding: 12px 24px; border-radius: 8px; font-weight: bold;
+            font-size: 14px; cursor: pointer; border: none; margin-top: 10px; width: 100%; max-width: 280px;
         }
 
-        /* App Header */
         .app-header {
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            background: rgba(15, 15, 15, 0.95);
-            backdrop-filter: blur(10px);
-            padding: 12px 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            position: sticky; top: 0; z-index: 100;
+            background: rgba(15, 15, 15, 0.95); padding: 12px 16px;
+            display: flex; justify-content: space-between; align-items: center;
             border-bottom: 1px solid var(--border-color);
         }
 
-        .app-title {
-            font-size: 17px;
-            font-weight: 700;
-            color: var(--primary-color);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
+        .app-title { font-size: 17px; font-weight: 700; color: var(--primary-color); display: flex; align-items: center; gap: 8px; }
 
-        /* User Profile Banner */
         .user-card {
             background: linear-gradient(135deg, #2c2c2e, #1c1c1e);
-            padding: 12px;
-            border-radius: var(--radius);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 16px;
-            border: 1px solid var(--border-color);
+            padding: 12px; border-radius: var(--radius);
+            display: flex; align-items: center; gap: 12px; margin-bottom: 16px; border: 1px solid var(--border-color);
         }
 
-        .user-avatar-img {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid var(--primary-color);
+        .user-avatar-img, .user-avatar-placeholder {
+            width: 48px; height: 48px; border-radius: 50%;
         }
-
-        .user-avatar-placeholder {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            background: var(--primary-color);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            color: white;
-            font-weight: bold;
-        }
+        .user-avatar-img { object-fit: cover; border: 2px solid var(--primary-color); }
+        .user-avatar-placeholder { background: var(--primary-color); display: flex; align-items: center; justify-content: center; font-size: 20px; color: white; font-weight: bold; }
 
         .user-details h4 { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
-        .vip-badge-tag {
-            background: linear-gradient(45deg, #ffd700, #ff9800);
-            color: #000;
-            font-size: 10px;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-weight: bold;
-        }
+        .vip-badge-tag { background: linear-gradient(45deg, #ffd700, #ff9800); color: #000; font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
 
-        /* View Sections */
-        .app-view {
-            display: none;
-            padding: 16px;
-        }
-
+        .app-view { display: none; padding: 16px; }
         .app-view.active { display: block; }
 
-        .section-header {
-            font-size: 15px;
-            font-weight: 700;
-            margin: 15px 0 10px 0;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+        .section-header { font-size: 15px; font-weight: 700; margin: 15px 0 10px 0; }
+
+        .movie-grid, .gallery-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 12px;
         }
+        .gallery-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
 
-        /* Movie Layout */
-        .movie-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-            gap: 12px;
+        .movie-card, .gallery-card {
+            background: var(--card-bg); border-radius: var(--radius); overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.3); cursor: pointer; position: relative;
         }
+        .movie-card img, .gallery-card img { width: 100%; height: 145px; object-fit: cover; display: block; }
+        .gallery-card img { height: 150px; }
+        .movie-card-info, .gallery-card-title { padding: 8px; font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .gallery-card-title { font-size: 11px; color: #ddd; text-align: center; }
 
-        .movie-card {
-            background: var(--card-bg);
-            border-radius: var(--radius);
-            overflow: hidden;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            cursor: pointer;
-            position: relative;
-        }
+        .movie-badge-vip { position: absolute; top: 6px; right: 6px; background: linear-gradient(45deg, #ffd700, #ff9800); color: #000; font-size: 9px; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
+        .movie-badge-free { position: absolute; top: 6px; right: 6px; background: #4caf50; color: #fff; font-size: 9px; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
 
-        .movie-badge-vip {
-            position: absolute;
-            top: 6px;
-            right: 6px;
-            background: linear-gradient(45deg, #ffd700, #ff9800);
-            color: #000;
-            font-size: 9px;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-weight: bold;
-        }
-
-        .movie-badge-free {
-            position: absolute;
-            top: 6px;
-            right: 6px;
-            background: #4caf50;
-            color: #fff;
-            font-size: 9px;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-weight: bold;
-        }
-
-        .movie-card img {
-            width: 100%;
-            height: 145px;
-            object-fit: cover;
-            display: block;
-        }
-
-        .movie-card-info { padding: 8px; }
-
-        .movie-card-title {
-            font-size: 12px;
-            font-weight: 600;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        /* Photo Gallery Layout */
-        .gallery-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-            gap: 12px;
-        }
-
-        .gallery-card {
-            background: var(--card-bg);
-            border-radius: var(--radius);
-            overflow: hidden;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-        }
-
-        .gallery-card img {
-            width: 100%;
-            height: 150px;
-            object-fit: cover;
-            display: block;
-        }
-
-        .gallery-card-title {
-            padding: 8px;
-            font-size: 11px;
-            color: #ddd;
-            text-align: center;
-        }
-
-        /* Forms */
         .form-group { margin-bottom: 12px; }
         .form-group label { display: block; font-size: 11px; color: var(--text-muted); margin-bottom: 5px; }
-        .form-control {
-            width: 100%;
-            padding: 10px 12px;
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            color: #fff;
-            font-size: 13px;
-            outline: none;
-        }
+        .form-control { width: 100%; padding: 10px 12px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; font-size: 13px; outline: none; }
+        .btn-submit { width: 100%; padding: 12px; background: var(--primary-color); border: none; border-radius: 8px; color: white; font-weight: 700; font-size: 14px; cursor: pointer; margin-top: 10px; }
 
-        .btn-submit {
-            width: 100%;
-            padding: 12px;
-            background: var(--primary-color);
-            border: none;
-            border-radius: 8px;
-            color: white;
-            font-weight: 700;
-            font-size: 14px;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-
-        /* Admin User List */
-        .users-list {
-            background: var(--card-bg);
-            border-radius: var(--radius);
-            padding: 10px;
-            margin-top: 15px;
-            max-height: 350px;
-            overflow-y: auto;
-        }
-
-        .user-item-card {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px;
-            border-bottom: 1px solid var(--border-color);
-            border-radius: 8px;
-        }
-
-        .user-item-card:last-child { border-bottom: none; }
-        .user-item-avatar { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; }
-        .user-item-placeholder {
-            width: 42px; height: 42px; border-radius: 50%; background: #333;
-            display: flex; align-items: center; justify-content: center;
-            font-weight: bold; color: #fff; font-size: 16px;
-        }
-
+        .users-list { background: var(--card-bg); border-radius: var(--radius); padding: 10px; margin-top: 15px; max-height: 350px; overflow-y: auto; }
+        .user-item-card { display: flex; align-items: center; gap: 10px; padding: 10px; border-bottom: 1px solid var(--border-color); border-radius: 8px; }
+        .user-item-avatar, .user-item-placeholder { width: 42px; height: 42px; border-radius: 50%; }
+        .user-item-avatar { object-fit: cover; }
+        .user-item-placeholder { background: #333; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #fff; font-size: 16px; }
         .user-item-info { flex: 1; }
         .user-item-info strong { font-size: 13px; color: #fff; display: block; }
         .user-item-info span { font-size: 11px; color: #40c4ff; }
-        
-        .btn-vip-toggle {
-            background: #ff9800;
-            color: #000;
-            border: none;
-            padding: 5px 10px;
-            font-size: 10px;
-            font-weight: bold;
-            border-radius: 6px;
-            cursor: pointer;
-        }
+        .btn-vip-toggle { background: #ff9800; color: #000; border: none; padding: 5px 10px; font-size: 10px; font-weight: bold; border-radius: 6px; cursor: pointer; }
 
-        /* Chat Section Styles */
-        .chat-container {
-            display: flex;
-            flex-direction: column;
-            height: calc(100vh - 160px);
-            background: var(--card-bg);
-            border-radius: var(--radius);
-            overflow: hidden;
-            border: 1px solid var(--border-color);
-        }
-
-        .chat-messages {
-            flex: 1; padding: 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;
-        }
-
+        .chat-container { display: flex; flex-direction: column; height: calc(100vh - 160px); background: var(--card-bg); border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border-color); }
+        .chat-messages { flex: 1; padding: 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
         .chat-msg-item { display: flex; gap: 10px; align-items: flex-start; max-width: 85%; }
         .chat-msg-item.my-msg { align-self: flex-end; flex-direction: row-reverse; }
-
-        .chat-msg-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
-        .chat-msg-avatar-ph {
-            width: 32px; height: 32px; border-radius: 50%; background: var(--primary-color);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 14px; color: #fff; font-weight: bold;
-        }
-
+        .chat-msg-avatar, .chat-msg-avatar-ph { width: 32px; height: 32px; border-radius: 50%; }
+        .chat-msg-avatar { object-fit: cover; }
+        .chat-msg-avatar-ph { background: var(--primary-color); display: flex; align-items: center; justify-content: center; font-size: 14px; color: #fff; font-weight: bold; }
         .chat-msg-body { background: #2c2c2e; padding: 8px 12px; border-radius: 12px; }
         .chat-msg-item.my-msg .chat-msg-body { background: #e50914; }
-
         .chat-msg-author { font-size: 11px; font-weight: bold; color: #40c4ff; margin-bottom: 2px; }
         .chat-msg-item.my-msg .chat-msg-author { color: #ffeb3b; text-align: left; }
         .chat-msg-text { font-size: 13px; word-break: break-word; }
         .chat-msg-time { font-size: 9px; color: var(--text-muted); margin-top: 4px; text-align: left; }
+        .chat-input-bar { padding: 8px 10px; background: #161618; display: flex; gap: 8px; border-top: 1px solid var(--border-color); }
+        .chat-input-bar input { flex: 1; padding: 10px; background: #2c2c2e; border: none; border-radius: 8px; color: #fff; font-size: 13px; outline: none; }
+        .chat-input-bar button { background: var(--primary-color); border: none; color: #fff; padding: 0 16px; border-radius: 8px; cursor: pointer; font-size: 16px; }
 
-        .chat-input-bar {
-            padding: 8px 10px; background: #161618; display: flex; gap: 8px; border-top: 1px solid var(--border-color);
-        }
-
-        .chat-input-bar input {
-            flex: 1; padding: 10px; background: #2c2c2e; border: none; border-radius: 8px; color: #fff; font-size: 13px; outline: none;
-        }
-
-        .chat-input-bar button {
-            background: var(--primary-color); border: none; color: #fff; padding: 0 16px; border-radius: 8px; cursor: pointer; font-size: 16px;
-        }
-
-        /* Navigation */
         .bottom-nav {
-            position: fixed;
-            bottom: 0; left: 0; right: 0;
-            height: 60px;
-            background: var(--nav-bg);
-            border-top: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            z-index: 1000;
+            position: fixed; bottom: 0; left: 0; right: 0; height: 60px;
+            background: var(--nav-bg); border-top: 1px solid var(--border-color);
+            display: flex; justify-content: space-around; align-items: center; z-index: 1000;
         }
-
-        .nav-item {
-            display: flex; flex-direction: column; align-items: center;
-            color: var(--text-muted); font-size: 10px; gap: 4px; cursor: pointer; flex: 1;
-        }
-
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: var(--text-muted); font-size: 10px; gap: 4px; cursor: pointer; flex: 1; }
         .nav-item i { font-size: 18px; }
         .nav-item.active { color: var(--primary-color); }
         .admin-nav-item { display: none; }
 
-        /* Player Modal */
-        .player-modal {
-            display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: #000; z-index: 2000; flex-direction: column;
-        }
-
-        .player-header {
-            padding: 12px; display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.8);
-        }
-
-        .player-body { flex: 1; }
+        .player-modal, .link-modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); z-index: 2000; flex-direction: column; justify-content: center; align-items: center; }
+        .player-modal { justify-content: flex-start; }
+        .player-header { width: 100%; padding: 12px; display: flex; justify-content: space-between; background: rgba(0,0,0,0.8); }
+        .player-body { width: 100%; flex: 1; }
         .player-body iframe { width: 100%; height: 100%; border: none; }
-        .btn-close { color: #fff; font-size: 20px; background: none; border: none; }
-
-        /* Link Box Modal */
-        .link-modal {
-            display: none; position: fixed; top:0; left:0; right:0; bottom:0;
-            background: rgba(0,0,0,0.85); z-index: 3000; justify-content: center; align-items: center; padding: 20px;
-        }
-        .link-modal-content {
-            background: var(--card-bg); padding: 20px; border-radius: 12px; width: 100%; max-width: 380px; text-align: center;
-        }
+        .btn-close { color: #fff; font-size: 20px; background: none; border: none; cursor: pointer; }
+        .link-modal-content { background: var(--card-bg); padding: 20px; border-radius: 12px; width: 90%; max-width: 380px; text-align: center; }
     </style>
 </head>
 <body>
 
-    <!-- Access Restriction Overlay Prompt -->
     <div id="telegramOnlyOverlay">
         <i class="fa-brands fa-telegram"></i>
         <h2>كىنو قانىلىمىزغا ئەزا بولۇڭ</h2>
-        <p id="overlayMessage">فىلىملەرنى ياخشى كۆرۈش ئۈچۈن قانىلىمىزغا ئەزا بولۇپ قويۇشىڭىزنى تەۋسىيە قىلىمىز!</p>
-        <button class="btn-join-channel" onclick="openChannelLink()">
-            <i class="fa-paper-plane"></i> قانالغا كىرىش (@xax9898)
-        </button>
-        <button class="btn-join-channel" style="background:#333; margin-top:10px;" onclick="closeChannelPrompt()">
-            <i class="fa-solid fa-check"></i> ئەزا بولدۇم (داۋاملاشتۇرۇش)
-        </button>
+        <p>فىلىملەرنى كۆرۈش ئۈچۈن قانىلىمىزغا ئەزا بولۇپ قويۇڭ!</p>
+        <button class="btn-join-channel" onclick="openChannelLink()">قانالغا كىرىش (@xax9898)</button>
+        <button class="btn-join-channel" style="background:#333; margin-top:10px;" onclick="closeChannelPrompt()">ئەزا بولدۇم (داۋاملاشتۇرۇش)</button>
     </div>
 
-    <!-- Main App Container -->
     <div id="appContainer">
-        <!-- App Header -->
         <div class="app-header">
-            <div class="app-title">
-                <i class="fa-solid fa-play-circle"></i> ئۇيغۇر كىنو Mini App
-            </div>
-            <div style="font-size: 11px; color: #40c4ff;">
-                <i class="fa-brands fa-telegram"></i> Telegram
-            </div>
+            <div class="app-title"><i class="fa-solid fa-play-circle"></i> ئۇيغۇر كىنو Mini App</div>
+            <div style="font-size: 11px; color: #40c4ff;"><i class="fa-brands fa-telegram"></i> Telegram</div>
         </div>
 
-        <!-- 1. Home View -->
         <div id="homeView" class="app-view active">
-            <div class="user-card" id="userProfileCard">
+            <div class="user-card">
                 <div id="uAvatarContainer"></div>
                 <div class="user-details">
                     <h4 id="uName">ئىشلەتكۈچى <span id="vipBadgeContainer"></span></h4>
                 </div>
             </div>
-
-            <div class="section-header">
-                <span>يېڭى قوشۇلغان فىلىملەر</span>
-            </div>
+            <div class="section-header">يېڭى قوشۇلغان فىلىملەر</div>
             <div class="movie-grid" id="homeMovieList"></div>
         </div>
 
-        <!-- 2. Search View -->
         <div id="searchView" class="app-view">
             <div class="form-group">
                 <input type="text" id="searchInput" class="form-control" placeholder="كىنو ئىسمىنى ئىزدەڭ..." oninput="handleSearch()">
@@ -462,19 +195,13 @@
             <div class="movie-grid" id="searchMovieList"></div>
         </div>
 
-        <!-- 3. Photos Gallery View -->
         <div id="galleryView" class="app-view">
-            <div class="section-header">
-                <span><i class="fa-solid fa-images"></i> رەسىملەر ئامبىرى</span>
-            </div>
+            <div class="section-header">رەسىملەر ئامبىرى</div>
             <div class="gallery-grid" id="galleryContainer"></div>
         </div>
 
-        <!-- 4. Chat View -->
         <div id="chatView" class="app-view">
-            <div class="section-header">
-                <span><i class="fa-solid fa-comments"></i> ئاممىۋى پاراڭلىشىش سورۇنى</span>
-            </div>
+            <div class="section-header">ئاممىۋى پاراڭلىشىش سورۇنى</div>
             <div class="chat-container">
                 <div class="chat-messages" id="chatMessageList"></div>
                 <div class="chat-input-bar">
@@ -484,81 +211,41 @@
             </div>
         </div>
 
-        <!-- 5. Admin View -->
         <div id="adminView" class="app-view">
-            <div class="section-header">
-                <span><i class="fa-solid fa-film"></i> يېڭى فىلىم قوشۇش</span>
-            </div>
+            <div class="section-header">يېڭى فىلىم قوشۇش</div>
             <form id="addMovieForm" onsubmit="saveMovie(event)">
-                <div class="form-group">
-                    <label>فىلىم ئىسمى</label>
-                    <input type="text" id="movieTitle" class="form-control" placeholder="فىلىم نامى" required>
-                </div>
-                <div class="form-group">
-                    <label>فىلىم رەسىمى (Image URL)</label>
-                    <input type="url" id="moviePoster" class="form-control" placeholder="https://..." required>
-                </div>
-                <div class="form-group">
-                    <label>Archive.org ئۇلانمىسى</label>
-                    <input type="url" id="movieArchiveUrl" class="form-control" placeholder="https://archive.org/details/..." required>
-                </div>
-                <div class="form-group">
-                    <label>فىلىم تۈرى</label>
+                <div class="form-group"><label>فىلىم ئىسمى</label><input type="text" id="movieTitle" class="form-control" required></div>
+                <div class="form-group"><label>فىلىم رەسىمى URL</label><input type="url" id="moviePoster" class="form-control" required></div>
+                <div class="form-group"><label>Archive.org URL</label><input type="url" id="movieArchiveUrl" class="form-control" required></div>
+                <div class="form-group"><label>فىلىم تۈرى</label>
                     <select id="movieType" class="form-control">
-                        <option value="free">ھەقسىز (ھەممىگە ئوچۇق)</option>
-                        <option value="vip">👑 VIP (پەقەت VIP ئەزالارغا)</option>
+                        <option value="free">ھەقسىز</option>
+                        <option value="vip">👑 VIP</option>
                     </select>
                 </div>
-                <button type="submit" class="btn-submit"><i class="fa-solid fa-plus"></i> فىلىم ئېلان قىلىش</button>
+                <button type="submit" class="btn-submit">فىلىم ئېلان قىلىش</button>
             </form>
 
-            <div class="section-header" style="margin-top: 25px;">
-                <span><i class="fa-solid fa-image"></i> يېڭى رەسىم يوللاش</span>
-            </div>
+            <div class="section-header" style="margin-top: 25px;">يېڭى رەسىم يوللاش</div>
             <form id="addPhotoForm" onsubmit="savePhoto(event)">
-                <div class="form-group">
-                    <label>رەسىم ماۋزۇسى</label>
-                    <input type="text" id="photoTitle" class="form-control" placeholder="تېما..." required>
-                </div>
-                <div class="form-group">
-                    <label>رەسىم ئۇلانمىسى (Image URL)</label>
-                    <input type="url" id="photoUrl" class="form-control" placeholder="https://..." required>
-                </div>
-                <button type="submit" class="btn-submit" style="background:#2196f3;"><i class="fa-solid fa-upload"></i> رەسىم يوللاش</button>
+                <div class="form-group"><label>رەسىم ماۋزۇسى</label><input type="text" id="photoTitle" class="form-control" required></div>
+                <div class="form-group"><label>رەسىم URL</label><input type="url" id="photoUrl" class="form-control" required></div>
+                <button type="submit" class="btn-submit" style="background:#2196f3;">رەسىم يوللاش</button>
             </form>
 
-            <div class="section-header" style="margin-top: 25px;">
-                <span><i class="fa-solid fa-users"></i> كىرگەن ئابونتلار (<span id="userCount">0</span>)</span>
-            </div>
+            <div class="section-header" style="margin-top: 25px;">كىرگەن ئابونتلار (<span id="userCount">0</span>)</div>
             <div class="users-list" id="registeredUsersContainer"></div>
         </div>
 
-        <!-- Bottom Navigation -->
         <div class="bottom-nav">
-            <div class="nav-item active" onclick="switchView('homeView', this)">
-                <i class="fa-solid fa-house"></i>
-                <span>ئاساسىي</span>
-            </div>
-            <div class="nav-item" onclick="switchView('searchView', this)">
-                <i class="fa-solid fa-magnifying-glass"></i>
-                <span>ئىزدەش</span>
-            </div>
-            <div class="nav-item" onclick="switchView('galleryView', this)">
-                <i class="fa-solid fa-images"></i>
-                <span>رەسىملەر</span>
-            </div>
-            <div class="nav-item" onclick="switchView('chatView', this)">
-                <i class="fa-solid fa-comments"></i>
-                <span>پاراڭلىشىش</span>
-            </div>
-            <div class="nav-item admin-nav-item" id="adminNavItem" onclick="switchView('adminView', this)">
-                <i class="fa-solid fa-user-shield"></i>
-                <span>باشقۇرۇش</span>
-            </div>
+            <div class="nav-item active" onclick="switchView('homeView', this)"><i class="fa-solid fa-house"></i><span>ئاساسىي</span></div>
+            <div class="nav-item" onclick="switchView('searchView', this)"><i class="fa-solid fa-magnifying-glass"></i><span>ئىزدەش</span></div>
+            <div class="nav-item" onclick="switchView('galleryView', this)"><i class="fa-solid fa-images"></i><span>رەسىملەر</span></div>
+            <div class="nav-item" onclick="switchView('chatView', this)"><i class="fa-solid fa-comments"></i><span>پاراڭلىشىش</span></div>
+            <div class="nav-item admin-nav-item" id="adminNavItem" onclick="switchView('adminView', this)"><i class="fa-solid fa-user-shield"></i><span>باشقۇرۇش</span></div>
         </div>
     </div>
 
-    <!-- Video Player Screen -->
     <div id="playerModal" class="player-modal">
         <div class="player-header">
             <span id="playerTitle" style="font-size: 13px; font-weight: 600;"></span>
@@ -567,21 +254,18 @@
         <div class="player-body" id="playerContainer"></div>
     </div>
 
-    <!-- Generated Link Modal -->
     <div id="linkModal" class="link-modal">
         <div class="link-modal-content">
-            <h3 style="color:#40c4ff; font-size:15px; margin-bottom:10px;">فىلىم كۆۋرۈك ئۇلانمىسى تەيار بولدى!</h3>
-            <p style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">تۆۋەندىكى ئادرېسنى كۆچۈرۈپ <b>@xax9898</b> قانىلىڭىزغا رەسىم بىلەن قوشۇپ ئېلان قىلىڭ:</p>
+            <h3 style="color:#40c4ff; font-size:15px; margin-bottom:10px;">فىلىم ئۇلانمىسى تەيار بولدى!</h3>
             <input type="text" id="generatedLinkInput" class="form-control" readonly style="text-align:center; direction:ltr; margin-bottom:15px;">
-            <button class="btn-submit" onclick="copyMovieLink()"><i class="fa-regular fa-copy"></i> كۆچۈرۈش</button>
+            <button class="btn-submit" onclick="copyMovieLink()">كۆچۈرۈش</button>
             <button class="btn-submit" style="background:#333; margin-top:5px;" onclick="closeLinkModal()">تاقاش</button>
         </div>
     </div>
 
     <script>
-        const ADMIN_TELEGRAM_ID = "8739045571"; 
-        const BOT_USERNAME = "Uyghur98_bot"; 
-
+        const ADMIN_TELEGRAM_ID = "8739045571";
+        const BOT_USERNAME = "Uyghur98_bot";
         const tg = window.Telegram?.WebApp;
         let currentUser = null;
 
@@ -592,64 +276,45 @@
                     tg.ready();
                     tg.expand();
                 } else {
-                    currentUser = {
-                        id: 111111,
-                        first_name: "ئىشلەتكۈچى",
-                        username: "test_user",
-                        photo_url: null
-                    };
+                    currentUser = { id: 8739045571, first_name: "باشقۇرغۇچى", username: "admin", photo_url: null };
                 }
 
                 autoRegisterUser(currentUser);
 
-                const hasSeenPrompt = localStorage.getItem(`seen_channel_prompt_${currentUser.id}`);
+                const hasSeen = localStorage.getItem(`seen_prompt_${currentUser.id}`);
                 const overlay = document.getElementById('telegramOnlyOverlay');
-                if (!hasSeenPrompt && overlay) {
+                if (!hasSeen && overlay) {
                     overlay.style.display = 'flex';
-                } else if(overlay) {
+                } else if (overlay) {
                     overlay.style.display = 'none';
                 }
 
-                const nameEl = document.getElementById('uName');
-                if(nameEl) {
-                    const fullName = `${currentUser.first_name \vert{}\vert{} ''}${currentUser.last_name || ''}`.trim();
-                    nameEl.innerText = fullName || 'ئىشلەتكۈچى';
-                }
-                
+                document.getElementById('uName').innerText = `${currentUser.first_name || 'ئىشلەتكۈچى'}`;
                 checkVipStatusUI();
 
                 const avatarBox = document.getElementById('uAvatarContainer');
-                if (avatarBox) {
-                    if (currentUser.photo_url) {
-                        avatarBox.innerHTML = `<img src="${currentUser.photo_url}" class="user-avatar-img">`;
-                    } else {
-                        avatarBox.innerHTML = `<div class="user-avatar-placeholder">${(currentUser.first_name || 'U').charAt(0).toUpperCase()}</div>`;
-                    }
+                if (currentUser.photo_url) {
+                    avatarBox.innerHTML = `<img src="${currentUser.photo_url}" class="user-avatar-img">`;
+                } else {
+                    avatarBox.innerHTML = `<div class="user-avatar-placeholder">${(currentUser.first_name || 'U').charAt(0).toUpperCase()}</div>`;
                 }
 
                 if (String(currentUser.id) === String(ADMIN_TELEGRAM_ID)) {
-                    const adminNav = document.getElementById('adminNavItem');
-                    if(adminNav) adminNav.style.display = 'flex';
+                    document.getElementById('adminNavItem').style.display = 'flex';
                 }
 
                 renderHomeMovies();
                 renderGallery();
-                checkDeepLinkStart();
                 renderChatMessages();
-            } catch (e) {
-                console.error("Init Error:", e);
+            } catch(e) {
+                console.error(e);
             }
         }
 
         function checkVipStatusUI() {
             const isVip = isUserVip(currentUser.id);
             const container = document.getElementById('vipBadgeContainer');
-            if(!container) return;
-            if(isVip) {
-                container.innerHTML = `<span class="vip-badge-tag">👑 VIP</span>`;
-            } else {
-                container.innerHTML = ``;
-            }
+            if (container) container.innerHTML = isVip ? `<span class="vip-badge-tag">👑 VIP</span>` : '';
         }
 
         function isUserVip(userId) {
@@ -657,431 +322,214 @@
             try {
                 const vipUsers = JSON.parse(localStorage.getItem('uyghur_vip_users')) || [];
                 return vipUsers.includes(String(userId));
-            } catch(e) {
-                return false;
-            }
+            } catch(e) { return false; }
         }
 
         function toggleUserVipStatus(userId) {
-            try {
-                let vipUsers = JSON.parse(localStorage.getItem('uyghur_vip_users')) || [];
-                const strId = String(userId);
-                
-                if (vipUsers.includes(strId)) {
-                    vipUsers = vipUsers.filter(id => id !== strId);
-                    alert('VIP سالاھىيىتى بىكار قىلىندى.');
-                } else {
-                    vipUsers.push(strId);
-                    alert('VIP سالاھىيىتى بېرىلدى!');
-                }
-
-                localStorage.setItem('uyghur_vip_users', JSON.stringify(vipUsers));
-                renderAdminUserList();
-                checkVipStatusUI();
-            } catch(e) {
-                console.error(e);
+            let vipUsers = JSON.parse(localStorage.getItem('uyghur_vip_users')) || [];
+            const strId = String(userId);
+            if (vipUsers.includes(strId)) {
+                vipUsers = vipUsers.filter(id => id !== strId);
+            } else {
+                vipUsers.push(strId);
             }
+            localStorage.setItem('uyghur_vip_users', JSON.stringify(vipUsers));
+            renderAdminUserList();
         }
 
         function openChannelLink() {
-            if(tg && tg.openTelegramLink) {
-                tg.openTelegramLink(`https://t.me/xax9898`);
-            } else {
-                window.open(`https://t.me/xax9898`, '_blank');
-            }
+            if (tg && tg.openTelegramLink) tg.openTelegramLink(`https://t.me/xax9898`);
+            else window.open(`https://t.me/xax9898`, '_blank');
         }
 
         function closeChannelPrompt() {
-            if (currentUser) {
-                localStorage.setItem(`seen_channel_prompt_${currentUser.id}`, 'true');
-            }
-            const overlay = document.getElementById('telegramOnlyOverlay');
-            if(overlay) overlay.style.display = 'none';
+            if (currentUser) localStorage.setItem(`seen_prompt_${currentUser.id}`, 'true');
+            document.getElementById('telegramOnlyOverlay').style.display = 'none';
         }
 
         function autoRegisterUser(user) {
             if (!user || !user.id) return;
-            try {
-                let users = JSON.parse(localStorage.getItem('uyghur_tg_users')) || [];
-                const existingIndex = users.findIndex(u => String(u.id) === String(user.id));
-
-                const now = new Date();
-                const timeFormatted = now.toLocaleDateString('ug') + ' ' + now.toLocaleTimeString('ug', {hour: '2-digit', minute:'2-digit'});
-
-                const userDataObj = {
+            let users = JSON.parse(localStorage.getItem('uyghur_tg_users')) || [];
+            if (!users.some(u => String(u.id) === String(user.id))) {
+                users.unshift({
                     id: user.id,
-                    name: `${user.first_name || ''} ${user.last_name || ''}`.trim(),
-                    username: user.username ? user.username : '',
+                    name: `${user.first_name || ''}`.trim(),
+                    username: user.username || '',
                     photo_url: user.photo_url || null,
-                    date: timeFormatted
-                };
-
-                if (existingIndex > -1) {
-                    users[existingIndex] = userDataObj;
-                } else {
-                    users.unshift(userDataObj);
-                }
-
+                    date: new Date().toLocaleDateString()
+                });
                 localStorage.setItem('uyghur_tg_users', JSON.stringify(users));
-            } catch(e) {
-                console.error(e);
             }
         }
 
-        function checkDeepLinkStart() {
-            if (!tg || !tg.initDataUnsafe) return;
-            const startParam = tg.initDataUnsafe.start_param;
-            if (startParam && startParam.startsWith('movie_')) {
-                const movieId = startParam.replace('movie_', '');
-                const movies = getMovies();
-                const targetMovie = movies.find(m => String(m.id) === String(movieId));
-                
-                if (targetMovie) {
-                    playMovie(targetMovie.title, targetMovie.archiveUrl, targetMovie.type);
-                }
-            }
-        }
-
-        /* Chat System */
         function sendChatMessage() {
-            const textInput = document.getElementById('chatInputText');
-            if(!textInput) return;
-            const text = textInput.value.trim();
-            if (!text || !currentUser) return;
-
-            try {
-                let messages = JSON.parse(localStorage.getItem('uyghur_app_chat')) || [];
-                const now = new Date();
-                const timeStr = now.toLocaleTimeString('ug', {hour: '2-digit', minute:'2-digit'});
-
-                const newMsg = {
-                    id: Date.now(),
-                    userId: currentUser.id,
-                    name: `${currentUser.first_name || ''} ${currentUser.last_name || ''}`.trim(),
-                    photo: currentUser.photo_url || null,
-                    text: text,
-                    time: timeStr
-                };
-
-                messages.push(newMsg);
-                localStorage.setItem('uyghur_app_chat', JSON.stringify(messages));
-
-                textInput.value = '';
-                renderChatMessages();
-            } catch(e) {
-                console.error(e);
-            }
+            const input = document.getElementById('chatInputText');
+            if (!input || !input.value.trim()) return;
+            let chats = JSON.parse(localStorage.getItem('uyghur_app_chat')) || [];
+            chats.push({
+                id: Date.now(),
+                userId: currentUser.id,
+                name: currentUser.first_name,
+                photo: currentUser.photo_url,
+                text: input.value.trim(),
+                time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+            });
+            localStorage.setItem('uyghur_app_chat', JSON.stringify(chats));
+            input.value = '';
+            renderChatMessages();
         }
 
         function renderChatMessages() {
             const container = document.getElementById('chatMessageList');
-            if(!container) return;
-            
-            let messages = [];
-            try {
-                messages = JSON.parse(localStorage.getItem('uyghur_app_chat')) || [];
-            } catch(e) {
-                messages = [];
-            }
-            
-            container.innerHTML = '';
-
-            messages.forEach(msg => {
-                const isMine = String(msg.userId) === String(currentUser?.id);
-                const msgItem = document.createElement('div');
-                msgItem.className = `chat-msg-item ${isMine ? 'my-msg' : ''}`;
-
-                const avatarHtml = msg.photo 
-                    ? `<img src="${msg.photo}" class="chat-msg-avatar">` 
-                    : `<div class="chat-msg-avatar-ph">${(msg.name || 'U').charAt(0).toUpperCase()}</div>`;
-
-                msgItem.innerHTML = `
-                    ${avatarHtml}
+            if (!container) return;
+            const chats = JSON.parse(localStorage.getItem('uyghur_app_chat')) || [];
+            container.innerHTML = chats.map(c => `
+                <div class="chat-msg-item ${String(c.userId) === String(currentUser?.id) ? 'my-msg' : ''}">
+                    ${c.photo ? `<img src="${c.photo}" class="chat-msg-avatar">` : `<div class="chat-msg-avatar-ph">${c.name.charAt(0)}</div>`}
                     <div class="chat-msg-body">
-                        <div class="chat-msg-author">${msg.name}</div>
-                        <div class="chat-msg-text">${msg.text}</div>
-                        <div class="chat-msg-time">${msg.time}</div>
+                        <div class="chat-msg-author">${c.name}</div>
+                        <div class="chat-msg-text">${c.text}</div>
+                        <div class="chat-msg-time">${c.time}</div>
                     </div>
-                `;
-                container.appendChild(msgItem);
-            });
-
+                </div>
+            `).join('');
             container.scrollTop = container.scrollHeight;
         }
 
-        /* Photo Gallery Functions */
         function savePhoto(e) {
             e.preventDefault();
-            const titleEl = document.getElementById('photoTitle');
-            const urlEl = document.getElementById('photoUrl');
-            if(!titleEl || !urlEl) return;
-
-            const title = titleEl.value;
-            const url = urlEl.value;
-
-            try {
-                let photos = JSON.parse(localStorage.getItem('uyghur_app_photos')) || [];
-                photos.unshift({ id: Date.now(), title, url });
-                localStorage.setItem('uyghur_app_photos', JSON.stringify(photos));
-
-                document.getElementById('addPhotoForm').reset();
-                alert('رەسىم مۇۋەپپەقىيەتلىك ئېلان قىلىندى!');
-                renderGallery();
-            } catch(e) {
-                console.error(e);
-            }
+            const title = document.getElementById('photoTitle').value;
+            const url = document.getElementById('photoUrl').value;
+            let photos = JSON.parse(localStorage.getItem('uyghur_app_photos')) || [];
+            photos.unshift({ id: Date.now(), title, url });
+            localStorage.setItem('uyghur_app_photos', JSON.stringify(photos));
+            document.getElementById('addPhotoForm').reset();
+            renderGallery();
+            alert('رەسىم قوشۇلدى!');
         }
 
         function renderGallery() {
             const container = document.getElementById('galleryContainer');
-            if(!container) return;
-
-            let photos = [];
-            try {
-                photos = JSON.parse(localStorage.getItem('uyghur_app_photos')) || [
-                    { id: 1, title: "ئۇيغۇر كىنو سۇپىسى", url: "https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?auto=format&fit=crop&w=400&q=80" }
-                ];
-            } catch(e) {
-                photos = [];
-            }
-
-            container.innerHTML = '';
-
-            photos.forEach(p => {
-                const card = document.createElement('div');
-                card.className = 'gallery-card';
-                card.innerHTML = `
+            if (!container) return;
+            let photos = JSON.parse(localStorage.getItem('uyghur_app_photos')) || [];
+            container.innerHTML = photos.map(p => `
+                <div class="gallery-card">
                     <img src="${p.url}" alt="${p.title}">
                     <div class="gallery-card-title">${p.title}</div>
-                `;
-                container.appendChild(card);
-            });
-        }
-
-        const defaultMovies = [
-            {
-                id: 1001,
-                title: "ئالەم ئارا ساياھەت",
-                poster: "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=400&q=80",
-                archiveUrl: "https://archive.org/embed/Popeye_for_President",
-                type: "free"
-            }
-        ];
-
-        function getMovies() {
-            try {
-                const saved = localStorage.getItem('uyghur_movies');
-                return saved ? JSON.parse(saved) : defaultMovies;
-            } catch(e) {
-                return defaultMovies;
-            }
+                </div>
+            `).join('');
         }
 
         function switchView(viewId, navElement) {
             if (viewId === 'adminView' && String(currentUser?.id) !== String(ADMIN_TELEGRAM_ID)) {
-                alert('سىزنىڭ باشقۇرۇش ھوقۇقىڭىز يوق!');
-                return;
+                alert('ھوقۇقىڭىز يوق!'); return;
             }
-
             document.querySelectorAll('.app-view').forEach(v => v.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById(viewId).classList.add('active');
+            if (navElement) navElement.classList.add('active');
 
-            const targetView = document.getElementById(viewId);
-            if(targetView) targetView.classList.add('active');
-            if(navElement) navElement.classList.add('active');
+            if (viewId === 'adminView') renderAdminUserList();
+            if (viewId === 'galleryView') renderGallery();
+            if (viewId === 'chatView') renderChatMessages();
+        }
 
-            if(viewId === 'homeView') renderHomeMovies();
-            if(viewId === 'searchView') handleSearch();
-            if(viewId === 'galleryView') renderGallery();
-            if(viewId === 'adminView') renderAdminUserList();
-            if(viewId === 'chatView') renderChatMessages();
+        function getMovies() {
+            return JSON.parse(localStorage.getItem('uyghur_movies')) || [
+                { id: 1001, title: "ئالەم ئارا ساياھەت", poster: "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=400&q=80", archiveUrl: "https://archive.org/embed/Popeye_for_President", type: "free" }
+            ];
         }
 
         function renderHomeMovies() {
-            const movies = getMovies();
             const container = document.getElementById('homeMovieList');
-            if(!container) return;
-            container.innerHTML = '';
-
-            movies.forEach(movie => {
-                const card = document.createElement('div');
-                card.className = 'movie-card';
-                card.onclick = () => playMovie(movie.title, movie.archiveUrl, movie.type);
-
-                const badge = movie.type === 'vip' 
-                    ? `<div class="movie-badge-vip">👑 VIP</div>` 
-                    : `<div class="movie-badge-free">ھەقسىز</div>`;
-
-                card.innerHTML = `
-                    ${badge}
-                    <img src="${movie.poster}" alt="${movie.title}">
-                    <div class="movie-card-info">
-                        <div class="movie-card-title">${movie.title}</div>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
+            if (!container) return;
+            const movies = getMovies();
+            container.innerHTML = movies.map(m => `
+                <div class="movie-card" onclick="playMovie('${m.title}', '${m.archiveUrl}', '${m.type}')">
+                    <div class="${m.type === 'vip' ? 'movie-badge-vip' : 'movie-badge-free'}">${m.type === 'vip' ? '👑 VIP' : 'ھەقسىز'}</div>
+                    <img src="${m.poster}" alt="${m.title}">
+                    <div class="movie-card-info"><div class="movie-card-title">${m.title}</div></div>
+                </div>
+            `).join('');
         }
 
         function renderAdminUserList() {
             const container = document.getElementById('registeredUsersContainer');
-            if(!container) return;
-
-            let users = [];
-            try {
-                users = JSON.parse(localStorage.getItem('uyghur_tg_users')) || [];
-            } catch(e) {
-                users = [];
-            }
-
-            const countEl = document.getElementById('userCount');
-            if(countEl) countEl.innerText = users.length;
-            container.innerHTML = '';
-
-            if(users.length === 0) {
-                container.innerHTML = `<p style="font-size:12px; color:var(--text-muted); padding:10px;">ھېچقانداق ئىشلەتكۈچى كىرمىدى</p>`;
-                return;
-            }
-
-            users.forEach(u => {
-                const item = document.createElement('div');
-                item.className = 'user-item-card';
-
-                const avatarHtml = u.photo_url 
-                    ? `<img src="${u.photo_url}" class="user-item-avatar">` 
-                    : `<div class="user-item-placeholder">${(u.name || 'U').charAt(0).toUpperCase()}</div>`;
-
-                const displayUsername = u.username ? `@${u.username}` : 'Username يوق';
-                const userIsVip = isUserVip(u.id);
-
-                item.innerHTML = `
-                    ${avatarHtml}
-                    <div class="user-item-info">
-                        <strong>${u.name} ${userIsVip ? '👑' : ''}</strong>
-                        <span>${displayUsername}</span>
+            if (!container) return;
+            let users = JSON.parse(localStorage.getItem('uyghur_tg_users')) || [];
+            document.getElementById('userCount').innerText = users.length;
+            container.innerHTML = users.map(u => {
+                const vip = isUserVip(u.id);
+                return `
+                    <div class="user-item-card">
+                        ${u.photo_url ? `<img src="${u.photo_url}" class="user-item-avatar">` : `<div class="user-item-placeholder">${u.name.charAt(0)}</div>`}
+                        <div class="user-item-info"><strong>${u.name} ${vip ? '👑' : ''}</strong><span>@${u.username || 'yوق'}</span></div>
+                        <button class="btn-vip-toggle" onclick="toggleUserVipStatus('${u.id}')">${vip ? 'VIP ئۆچۈرۈش' : 'VIP قىلىش'}</button>
                     </div>
-                    <button class="btn-vip-toggle" onclick="toggleUserVipStatus('${u.id}')">
-                        ${userIsVip ? 'VIP بىكار قىلىش' : 'VIP قىلىش'}
-                    </button>
                 `;
-                container.appendChild(item);
-            });
+            }).join('');
         }
 
         function saveMovie(e) {
             e.preventDefault();
-            const titleEl = document.getElementById('movieTitle');
-            const posterEl = document.getElementById('moviePoster');
-            const urlEl = document.getElementById('movieArchiveUrl');
-            const typeEl = document.getElementById('movieType');
-            
-            if(!titleEl || !posterEl || !urlEl || !typeEl) return;
+            const title = document.getElementById('movieTitle').value;
+            const poster = document.getElementById('moviePoster').value;
+            let archiveUrl = document.getElementById('movieArchiveUrl').value;
+            const type = document.getElementById('movieType').value;
 
-            const title = titleEl.value;
-            const poster = posterEl.value;
-            let archiveUrl = urlEl.value;
-            const type = typeEl.value;
+            if (archiveUrl.includes('/details/')) archiveUrl = archiveUrl.replace('/details/', '/embed/');
 
-            if(archiveUrl.includes('archive.org/details/')) {
-                archiveUrl = archiveUrl.replace('/details/', '/embed/');
-            }
+            let movies = getMovies();
+            const id = Date.now();
+            movies.unshift({ id, title, poster, archiveUrl, type });
+            localStorage.setItem('uyghur_movies', JSON.stringify(movies));
+            document.getElementById('addMovieForm').reset();
 
-            try {
-                const movieId = Date.now();
-                const movies = getMovies();
-                movies.unshift({ id: movieId, title, poster, archiveUrl, type });
-                localStorage.setItem('uyghur_movies', JSON.stringify(movies));
-
-                document.getElementById('addMovieForm').reset();
-
-                const generatedLink = `https://t.me/${BOT_USERNAME}?startapp=movie_${movieId}`;
-                const linkInput = document.getElementById('generatedLinkInput');
-                if(linkInput) linkInput.value = generatedLink;
-                
-                const linkModal = document.getElementById('linkModal');
-                if(linkModal) linkModal.style.display = 'flex';
-            } catch(e) {
-                console.error(e);
-            }
+            document.getElementById('generatedLinkInput').value = `https://t.me/${BOT_USERNAME}?startapp=movie_${id}`;
+            document.getElementById('linkModal').style.display = 'flex';
         }
 
         function copyMovieLink() {
             const input = document.getElementById('generatedLinkInput');
-            if(!input) return;
             input.select();
             document.execCommand('copy');
-            alert('ئۇلانما كۆچۈرۈلدى! ئەمدى كىنو قانىلىڭىزغا ئېلان قىلسىڭىز بولىدۇ.');
+            alert('ئۇلانما كۆچۈرۈلدى!');
         }
 
         function closeLinkModal() {
-            const linkModal = document.getElementById('linkModal');
-            if(linkModal) linkModal.style.display = 'none';
+            document.getElementById('linkModal').style.display = 'none';
             switchView('homeView', document.querySelectorAll('.nav-item')[0]);
         }
 
         function playMovie(title, url, type) {
             if (type === 'vip' && !isUserVip(currentUser?.id)) {
-                alert("بۇ VIP فىلىم! كۆرۈش ئۈچۈن باشقۇرۇشقا ئىلتىماس قىلىپ VIP ئەزا بولۇڭ.");
+                alert('بۇ VIP فىلىم! كۆرۈش ئۈچۈن سىزدە VIP سالاھىيىتى بولۇشى كېرەك.');
                 return;
             }
-
-            const modal = document.getElementById('playerModal');
-            const container = document.getElementById('playerContainer');
-            const titleEl = document.getElementById('playerTitle');
-            
-            if(titleEl) titleEl.innerText = title;
-
-            let embedUrl = url;
-            if(embedUrl.includes('archive.org/details/')) {
-                embedUrl = embedUrl.replace('/details/', '/embed/');
-            }
-
-            if(container) container.innerHTML = `<iframe src="${embedUrl}" allowfullscreen></iframe>`;
-            if(modal) modal.style.display = 'flex';
+            document.getElementById('playerTitle').innerText = title;
+            document.getElementById('playerContainer').innerHTML = `<iframe src="${url}" allowfullscreen></iframe>`;
+            document.getElementById('playerModal').style.display = 'flex';
         }
 
         function closeVideo() {
-            const modal = document.getElementById('playerModal');
-            const container = document.getElementById('playerContainer');
-            if(container) container.innerHTML = '';
-            if(modal) modal.style.display = 'none';
+            document.getElementById('playerContainer').innerHTML = '';
+            document.getElementById('playerModal').style.display = 'none';
         }
 
         function handleSearch() {
-            const searchInput = document.getElementById('searchInput');
-            if(!searchInput) return;
-            
-            const query = searchInput.value.toLowerCase().trim();
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
             const movies = getMovies();
             const filtered = movies.filter(m => m.title.toLowerCase().includes(query));
-            
-            const container = document.getElementById('searchMovieList');
-            if(!container) return;
-            container.innerHTML = '';
-
-            filtered.forEach(movie => {
-                const card = document.createElement('div');
-                card.className = 'movie-card';
-                card.onclick = () => playMovie(movie.title, movie.archiveUrl, movie.type);
-                
-                const badge = movie.type === 'vip' 
-                    ? `<div class="movie-badge-vip">👑 VIP</div>` 
-                    : `<div class="movie-badge-free">ھەقسىز</div>`;
-
-                card.innerHTML = `
-                    ${badge}
-                    <img src="${movie.poster}" alt="${movie.title}">
-                    <div class="movie-card-info">
-                        <div class="movie-card-title">${movie.title}</div>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
+            document.getElementById('searchMovieList').innerHTML = filtered.map(m => `
+                <div class="movie-card" onclick="playMovie('${m.title}', '${m.archiveUrl}', '${m.type}')">
+                    <div class="${m.type === 'vip' ? 'movie-badge-vip' : 'movie-badge-free'}">${m.type === 'vip' ? '👑 VIP' : 'ھەقسىز'}</div>
+                    <img src="${m.poster}" alt="${m.title}">
+                    <div class="movie-card-info"><div class="movie-card-title">${m.title}</div></div>
+                </div>
+            `).join('');
         }
 
-        window.onload = function() {
-            initApp();
-        };
+        window.onload = initApp;
     </script>
 </body>
 </html>
