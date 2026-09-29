@@ -51,7 +51,7 @@
 
         /* Access Restriction Overlay Popup */
         #telegramOnlyOverlay {
-            display: flex;
+            display: none;
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(15, 15, 15, 0.98);
@@ -154,15 +154,9 @@
         .app-view {
             display: none;
             padding: 16px;
-            animation: fadeIn 0.2s ease-in-out;
         }
 
         .app-view.active { display: block; }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(5px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
 
         .section-header {
             font-size: 15px;
@@ -591,61 +585,66 @@
         const tg = window.Telegram?.WebApp;
         let currentUser = null;
 
-        const userSyncChannel = new BroadcastChannel('user_registration_channel');
-        const chatSyncChannel = new BroadcastChannel('chat_messages_channel');
-
         function initApp() {
-            if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
-                currentUser = tg.initDataUnsafe.user;
-                tg.ready();
-                tg.expand();
-            } else {
-                currentUser = {
-                    id: Date.now(),
-                    first_name: "ئىشلەتكۈچى",
-                    username: "",
-                    photo_url: null
-                };
+            try {
+                if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
+                    currentUser = tg.initDataUnsafe.user;
+                    tg.ready();
+                    tg.expand();
+                } else {
+                    currentUser = {
+                        id: 111111,
+                        first_name: "ئىشلەتكۈچى",
+                        username: "test_user",
+                        photo_url: null
+                    };
+                }
+
+                autoRegisterUser(currentUser);
+
+                const hasSeenPrompt = localStorage.getItem(`seen_channel_prompt_${currentUser.id}`);
+                const overlay = document.getElementById('telegramOnlyOverlay');
+                if (!hasSeenPrompt && overlay) {
+                    overlay.style.display = 'flex';
+                } else if(overlay) {
+                    overlay.style.display = 'none';
+                }
+
+                const nameEl = document.getElementById('uName');
+                if(nameEl) {
+                    const fullName = `${currentUser.first_name \vert{}\vert{} ''}${currentUser.last_name || ''}`.trim();
+                    nameEl.innerText = fullName || 'ئىشلەتكۈچى';
+                }
+                
+                checkVipStatusUI();
+
+                const avatarBox = document.getElementById('uAvatarContainer');
+                if (avatarBox) {
+                    if (currentUser.photo_url) {
+                        avatarBox.innerHTML = `<img src="${currentUser.photo_url}" class="user-avatar-img">`;
+                    } else {
+                        avatarBox.innerHTML = `<div class="user-avatar-placeholder">${(currentUser.first_name || 'U').charAt(0).toUpperCase()}</div>`;
+                    }
+                }
+
+                if (String(currentUser.id) === String(ADMIN_TELEGRAM_ID)) {
+                    const adminNav = document.getElementById('adminNavItem');
+                    if(adminNav) adminNav.style.display = 'flex';
+                }
+
+                renderHomeMovies();
+                renderGallery();
+                checkDeepLinkStart();
+                renderChatMessages();
+            } catch (e) {
+                console.error("Init Error:", e);
             }
-
-            // ئابونتلارنى دەرھال تىزىملاش
-            autoRegisterUser(currentUser);
-
-            // ⚡ قانالغا ئەزا بولۇش ئەسكەرتىشىنى دەرھال چىقىرىش
-            const hasSeenPrompt = localStorage.getItem(`seen_channel_prompt_${currentUser.id}`);
-            if (!hasSeenPrompt) {
-                document.getElementById('telegramOnlyOverlay').style.display = 'flex';
-            } else {
-                document.getElementById('telegramOnlyOverlay').style.display = 'none';
-            }
-
-            // UI ئىشلەتكۈچى كۆرسىتىش
-            const fullName = `${currentUser.first_name \vert{}\vert{} ''}${currentUser.last_name || ''}`.trim();
-            document.getElementById('uName').innerText = fullName || 'ئىشلەتكۈچى';
-            
-            checkVipStatusUI();
-
-            const avatarBox = document.getElementById('uAvatarContainer');
-            if (currentUser.photo_url) {
-                avatarBox.innerHTML = `<img src="${currentUser.photo_url}" class="user-avatar-img">`;
-            } else {
-                avatarBox.innerHTML = `<div class="user-avatar-placeholder">${(currentUser.first_name || 'U').charAt(0).toUpperCase()}</div>`;
-            }
-
-            // باشقۇرغۇچى Menyusى
-            if (String(currentUser.id) === String(ADMIN_TELEGRAM_ID)) {
-                document.getElementById('adminNavItem').style.display = 'flex';
-            }
-
-            renderHomeMovies();
-            renderGallery();
-            checkDeepLinkStart();
-            renderChatMessages();
         }
 
         function checkVipStatusUI() {
             const isVip = isUserVip(currentUser.id);
             const container = document.getElementById('vipBadgeContainer');
+            if(!container) return;
             if(isVip) {
                 container.innerHTML = `<span class="vip-badge-tag">👑 VIP</span>`;
             } else {
@@ -655,73 +654,79 @@
 
         function isUserVip(userId) {
             if (String(userId) === String(ADMIN_TELEGRAM_ID)) return true;
-            const vipUsers = JSON.parse(localStorage.getItem('uyghur_vip_users')) || [];
-            return vipUsers.includes(String(userId));
+            try {
+                const vipUsers = JSON.parse(localStorage.getItem('uyghur_vip_users')) || [];
+                return vipUsers.includes(String(userId));
+            } catch(e) {
+                return false;
+            }
         }
 
         function toggleUserVipStatus(userId) {
-            let vipUsers = JSON.parse(localStorage.getItem('uyghur_vip_users')) || [];
-            const strId = String(userId);
-            
-            if (vipUsers.includes(strId)) {
-                vipUsers = vipUsers.filter(id => id !== strId);
-                alert('VIP سالاھىيىتى بىكار قىلىندى.');
-            } else {
-                vipUsers.push(strId);
-                alert('VIP سالاھىيىتى بېرىلدى!');
-            }
+            try {
+                let vipUsers = JSON.parse(localStorage.getItem('uyghur_vip_users')) || [];
+                const strId = String(userId);
+                
+                if (vipUsers.includes(strId)) {
+                    vipUsers = vipUsers.filter(id => id !== strId);
+                    alert('VIP سالاھىيىتى بىكار قىلىندى.');
+                } else {
+                    vipUsers.push(strId);
+                    alert('VIP سالاھىيىتى بېرىلدى!');
+                }
 
-            localStorage.setItem('uyghur_vip_users', JSON.stringify(vipUsers));
-            renderAdminUserList();
-            checkVipStatusUI();
+                localStorage.setItem('uyghur_vip_users', JSON.stringify(vipUsers));
+                renderAdminUserList();
+                checkVipStatusUI();
+            } catch(e) {
+                console.error(e);
+            }
         }
 
         function openChannelLink() {
-            if(tg && tg.openTelegramLink) tg.openTelegramLink(`https://t.me/xax9898`);
-            else window.open(`https://t.me/xax9898`, '_blank');
+            if(tg && tg.openTelegramLink) {
+                tg.openTelegramLink(`https://t.me/xax9898`);
+            } else {
+                window.open(`https://t.me/xax9898`, '_blank');
+            }
         }
 
         function closeChannelPrompt() {
             if (currentUser) {
                 localStorage.setItem(`seen_channel_prompt_${currentUser.id}`, 'true');
             }
-            document.getElementById('telegramOnlyOverlay').style.display = 'none';
+            const overlay = document.getElementById('telegramOnlyOverlay');
+            if(overlay) overlay.style.display = 'none';
         }
 
         function autoRegisterUser(user) {
             if (!user || !user.id) return;
-            
-            let users = JSON.parse(localStorage.getItem('uyghur_tg_users')) || [];
-            const existingIndex = users.findIndex(u => String(u.id) === String(user.id));
+            try {
+                let users = JSON.parse(localStorage.getItem('uyghur_tg_users')) || [];
+                const existingIndex = users.findIndex(u => String(u.id) === String(user.id));
 
-            const now = new Date();
-            const timeFormatted = now.toLocaleDateString('ug') + ' ' + now.toLocaleTimeString('ug', {hour: '2-digit', minute:'2-digit'});
+                const now = new Date();
+                const timeFormatted = now.toLocaleDateString('ug') + ' ' + now.toLocaleTimeString('ug', {hour: '2-digit', minute:'2-digit'});
 
-            const userDataObj = {
-                id: user.id,
-                name: `${user.first_name || ''} ${user.last_name || ''}`.trim(),
-                username: user.username ? user.username : '',
-                photo_url: user.photo_url || null,
-                date: timeFormatted
-            };
+                const userDataObj = {
+                    id: user.id,
+                    name: `${user.first_name || ''} ${user.last_name || ''}`.trim(),
+                    username: user.username ? user.username : '',
+                    photo_url: user.photo_url || null,
+                    date: timeFormatted
+                };
 
-            if (existingIndex > -1) {
-                users[existingIndex] = userDataObj;
-            } else {
-                users.unshift(userDataObj);
-            }
-
-            localStorage.setItem('uyghur_tg_users', JSON.stringify(users));
-            userSyncChannel.postMessage('new_user_added');
-        }
-
-        userSyncChannel.onmessage = (event) => {
-            if (event.data === 'new_user_added') {
-                if (document.getElementById('adminView').classList.contains('active')) {
-                    renderAdminUserList();
+                if (existingIndex > -1) {
+                    users[existingIndex] = userDataObj;
+                } else {
+                    users.unshift(userDataObj);
                 }
+
+                localStorage.setItem('uyghur_tg_users', JSON.stringify(users));
+            } catch(e) {
+                console.error(e);
             }
-        };
+        }
 
         function checkDeepLinkStart() {
             if (!tg || !tg.initDataUnsafe) return;
@@ -737,36 +742,48 @@
             }
         }
 
-        /* 💬 Chat System */
+        /* Chat System */
         function sendChatMessage() {
             const textInput = document.getElementById('chatInputText');
+            if(!textInput) return;
             const text = textInput.value.trim();
             if (!text || !currentUser) return;
 
-            let messages = JSON.parse(localStorage.getItem('uyghur_app_chat')) || [];
-            const now = new Date();
-            const timeStr = now.toLocaleTimeString('ug', {hour: '2-digit', minute:'2-digit'});
+            try {
+                let messages = JSON.parse(localStorage.getItem('uyghur_app_chat')) || [];
+                const now = new Date();
+                const timeStr = now.toLocaleTimeString('ug', {hour: '2-digit', minute:'2-digit'});
 
-            const newMsg = {
-                id: Date.now(),
-                userId: currentUser.id,
-                name: `${currentUser.first_name || ''} ${currentUser.last_name || ''}`.trim(),
-                photo: currentUser.photo_url || null,
-                text: text,
-                time: timeStr
-            };
+                const newMsg = {
+                    id: Date.now(),
+                    userId: currentUser.id,
+                    name: `${currentUser.first_name || ''} ${currentUser.last_name || ''}`.trim(),
+                    photo: currentUser.photo_url || null,
+                    text: text,
+                    time: timeStr
+                };
 
-            messages.push(newMsg);
-            localStorage.setItem('uyghur_app_chat', JSON.stringify(messages));
+                messages.push(newMsg);
+                localStorage.setItem('uyghur_app_chat', JSON.stringify(messages));
 
-            textInput.value = '';
-            renderChatMessages();
-            chatSyncChannel.postMessage('new_chat_msg');
+                textInput.value = '';
+                renderChatMessages();
+            } catch(e) {
+                console.error(e);
+            }
         }
 
         function renderChatMessages() {
-            const messages = JSON.parse(localStorage.getItem('uyghur_app_chat')) || [];
             const container = document.getElementById('chatMessageList');
+            if(!container) return;
+            
+            let messages = [];
+            try {
+                messages = JSON.parse(localStorage.getItem('uyghur_app_chat')) || [];
+            } catch(e) {
+                messages = [];
+            }
+            
             container.innerHTML = '';
 
             messages.forEach(msg => {
@@ -792,33 +809,42 @@
             container.scrollTop = container.scrollHeight;
         }
 
-        chatSyncChannel.onmessage = (event) => {
-            if (event.data === 'new_chat_msg') {
-                renderChatMessages();
-            }
-        };
-
-        /* 🖼️ Photo Gallery Functions */
+        /* Photo Gallery Functions */
         function savePhoto(e) {
             e.preventDefault();
-            const title = document.getElementById('photoTitle').value;
-            const url = document.getElementById('photoUrl').value;
+            const titleEl = document.getElementById('photoTitle');
+            const urlEl = document.getElementById('photoUrl');
+            if(!titleEl || !urlEl) return;
 
-            const photos = JSON.parse(localStorage.getItem('uyghur_app_photos')) || [];
-            photos.unshift({ id: Date.now(), title, url });
-            localStorage.setItem('uyghur_app_photos', JSON.stringify(photos));
+            const title = titleEl.value;
+            const url = urlEl.value;
 
-            document.getElementById('addPhotoForm').reset();
-            alert('رەسىم مۇۋەپپەقىيەتلىك ئېلان قىلىندى!');
-            renderGallery();
+            try {
+                let photos = JSON.parse(localStorage.getItem('uyghur_app_photos')) || [];
+                photos.unshift({ id: Date.now(), title, url });
+                localStorage.setItem('uyghur_app_photos', JSON.stringify(photos));
+
+                document.getElementById('addPhotoForm').reset();
+                alert('رەسىم مۇۋەپپەقىيەتلىك ئېلان قىلىندى!');
+                renderGallery();
+            } catch(e) {
+                console.error(e);
+            }
         }
 
         function renderGallery() {
-            const photos = JSON.parse(localStorage.getItem('uyghur_app_photos')) || [
-                { id: 1, title: "ئۇيغۇر كىنو سۇپىسى", url: "https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?auto=format&fit=crop&w=400&q=80" }
-            ];
             const container = document.getElementById('galleryContainer');
             if(!container) return;
+
+            let photos = [];
+            try {
+                photos = JSON.parse(localStorage.getItem('uyghur_app_photos')) || [
+                    { id: 1, title: "ئۇيغۇر كىنو سۇپىسى", url: "https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?auto=format&fit=crop&w=400&q=80" }
+                ];
+            } catch(e) {
+                photos = [];
+            }
+
             container.innerHTML = '';
 
             photos.forEach(p => {
@@ -843,8 +869,12 @@
         ];
 
         function getMovies() {
-            const saved = localStorage.getItem('uyghur_movies');
-            return saved ? JSON.parse(saved) : defaultMovies;
+            try {
+                const saved = localStorage.getItem('uyghur_movies');
+                return saved ? JSON.parse(saved) : defaultMovies;
+            } catch(e) {
+                return defaultMovies;
+            }
         }
 
         function switchView(viewId, navElement) {
@@ -856,7 +886,8 @@
             document.querySelectorAll('.app-view').forEach(v => v.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
 
-            document.getElementById(viewId).classList.add('active');
+            const targetView = document.getElementById(viewId);
+            if(targetView) targetView.classList.add('active');
             if(navElement) navElement.classList.add('active');
 
             if(viewId === 'homeView') renderHomeMovies();
@@ -869,6 +900,7 @@
         function renderHomeMovies() {
             const movies = getMovies();
             const container = document.getElementById('homeMovieList');
+            if(!container) return;
             container.innerHTML = '';
 
             movies.forEach(movie => {
@@ -892,9 +924,18 @@
         }
 
         function renderAdminUserList() {
-            const users = JSON.parse(localStorage.getItem('uyghur_tg_users')) || [];
             const container = document.getElementById('registeredUsersContainer');
-            document.getElementById('userCount').innerText = users.length;
+            if(!container) return;
+
+            let users = [];
+            try {
+                users = JSON.parse(localStorage.getItem('uyghur_tg_users')) || [];
+            } catch(e) {
+                users = [];
+            }
+
+            const countEl = document.getElementById('userCount');
+            if(countEl) countEl.innerText = users.length;
             container.innerHTML = '';
 
             if(users.length === 0) {
@@ -929,36 +970,52 @@
 
         function saveMovie(e) {
             e.preventDefault();
-            const title = document.getElementById('movieTitle').value;
-            const poster = document.getElementById('moviePoster').value;
-            let archiveUrl = document.getElementById('movieArchiveUrl').value;
-            const type = document.getElementById('movieType').value;
+            const titleEl = document.getElementById('movieTitle');
+            const posterEl = document.getElementById('moviePoster');
+            const urlEl = document.getElementById('movieArchiveUrl');
+            const typeEl = document.getElementById('movieType');
+            
+            if(!titleEl || !posterEl || !urlEl || !typeEl) return;
+
+            const title = titleEl.value;
+            const poster = posterEl.value;
+            let archiveUrl = urlEl.value;
+            const type = typeEl.value;
 
             if(archiveUrl.includes('archive.org/details/')) {
                 archiveUrl = archiveUrl.replace('/details/', '/embed/');
             }
 
-            const movieId = Date.now();
-            const movies = getMovies();
-            movies.unshift({ id: movieId, title, poster, archiveUrl, type });
-            localStorage.setItem('uyghur_movies', JSON.stringify(movies));
+            try {
+                const movieId = Date.now();
+                const movies = getMovies();
+                movies.unshift({ id: movieId, title, poster, archiveUrl, type });
+                localStorage.setItem('uyghur_movies', JSON.stringify(movies));
 
-            document.getElementById('addMovieForm').reset();
+                document.getElementById('addMovieForm').reset();
 
-            const generatedLink = `https://t.me/${BOT_USERNAME}?startapp=movie_${movieId}`;
-            document.getElementById('generatedLinkInput').value = generatedLink;
-            document.getElementById('linkModal').style.display = 'flex';
+                const generatedLink = `https://t.me/${BOT_USERNAME}?startapp=movie_${movieId}`;
+                const linkInput = document.getElementById('generatedLinkInput');
+                if(linkInput) linkInput.value = generatedLink;
+                
+                const linkModal = document.getElementById('linkModal');
+                if(linkModal) linkModal.style.display = 'flex';
+            } catch(e) {
+                console.error(e);
+            }
         }
 
         function copyMovieLink() {
             const input = document.getElementById('generatedLinkInput');
+            if(!input) return;
             input.select();
             document.execCommand('copy');
             alert('ئۇلانما كۆچۈرۈلدى! ئەمدى كىنو قانىلىڭىزغا ئېلان قىلسىڭىز بولىدۇ.');
         }
 
         function closeLinkModal() {
-            document.getElementById('linkModal').style.display = 'none';
+            const linkModal = document.getElementById('linkModal');
+            if(linkModal) linkModal.style.display = 'none';
             switchView('homeView', document.querySelectorAll('.nav-item')[0]);
         }
 
@@ -970,30 +1027,36 @@
 
             const modal = document.getElementById('playerModal');
             const container = document.getElementById('playerContainer');
-            document.getElementById('playerTitle').innerText = title;
+            const titleEl = document.getElementById('playerTitle');
+            
+            if(titleEl) titleEl.innerText = title;
 
             let embedUrl = url;
             if(embedUrl.includes('archive.org/details/')) {
                 embedUrl = embedUrl.replace('/details/', '/embed/');
             }
 
-            container.innerHTML = `<iframe src="${embedUrl}" allowfullscreen></iframe>`;
-            modal.style.display = 'flex';
+            if(container) container.innerHTML = `<iframe src="${embedUrl}" allowfullscreen></iframe>`;
+            if(modal) modal.style.display = 'flex';
         }
 
         function closeVideo() {
             const modal = document.getElementById('playerModal');
-            document.getElementById('playerContainer').innerHTML = '';
-            modal.style.display = 'none';
+            const container = document.getElementById('playerContainer');
+            if(container) container.innerHTML = '';
+            if(modal) modal.style.display = 'none';
         }
 
-        /* 🔎 Fixed Search Handler */
         function handleSearch() {
-            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            const searchInput = document.getElementById('searchInput');
+            if(!searchInput) return;
+            
+            const query = searchInput.value.toLowerCase().trim();
             const movies = getMovies();
             const filtered = movies.filter(m => m.title.toLowerCase().includes(query));
             
             const container = document.getElementById('searchMovieList');
+            if(!container) return;
             container.innerHTML = '';
 
             filtered.forEach(movie => {
