@@ -74,7 +74,17 @@
             user-select: none;
         }
 
-        /* كىرىش ئېكرانى (Login Screen) */
+        /* تېلېگراممىدىن باشقا جايلاردا ئېچىلغاندا چەكلەش ئېكرانى */
+        #browserBlockOverlay {
+            display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: #0f0f0f; z-index: 99999;
+            flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 25px;
+        }
+        #browserBlockOverlay i { font-size: 50px; color: #e50914; margin-bottom: 15px; }
+        #browserBlockOverlay h2 { font-size: 18px; margin-bottom: 10px; color: #fff; }
+        #browserBlockOverlay p { font-size: 13px; color: #8e8e93; line-height: 1.6; }
+
+        /* كىرىش كۆزنىكى (Login Overlay) */
         #loginOverlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: var(--tg-theme-bg); z-index: 9999;
@@ -86,11 +96,11 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
         .login-box h2 { font-size: 18px; color: var(--primary-color); margin-bottom: 8px; }
-        .login-box p { font-size: 12px; color: var(--text-muted); margin-bottom: 20px; }
+        .login-box p { font-size: 12px; color: var(--text-muted); margin-bottom: 20px; line-height: 1.5; }
 
         #telegramOnlyOverlay {
             display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(15, 15, 15, 0.98); z-index: 9999;
+            background: rgba(15, 15, 15, 0.98); z-index: 9998;
             flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px;
         }
 
@@ -112,13 +122,16 @@
         .user-card {
             background: linear-gradient(135deg, #2c2c2e, #1c1c1e);
             padding: 12px; border-radius: var(--radius);
-            display: flex; align-items: center; gap: 12px; margin-bottom: 16px; border: 1px solid var(--border-color);
+            display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; border: 1px solid var(--border-color);
         }
 
+        .user-card-left { display: flex; align-items: center; gap: 12px; }
         .user-avatar-placeholder { background: var(--primary-color); width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; color: white; font-weight: bold; }
 
         .user-details h4 { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
         .vip-badge-tag { background: linear-gradient(45deg, #ffd700, #ff9800); color: #000; font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
+
+        .btn-logout { background: #333; color: #ff5252; border: 1px solid var(--border-color); padding: 6px 10px; font-size: 11px; border-radius: 6px; cursor: pointer; font-weight: 600; }
 
         .app-view { display: none; padding: 16px; }
         .app-view.active { display: block; }
@@ -196,20 +209,27 @@
 </head>
 <body>
 
+    <!-- باشقا توربەتلەردە ئېچىشنى چەكلەش ئېكرانى -->
+    <div id="browserBlockOverlay">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <h2>پەقەت تېلېگراممىدالا ئېچىلىدۇ</h2>
+        <p>بۇ توربەتنى نورمال تور كۆرگۈلەردە (Chrome ياكى Safari قاتارلىقلاردا) ئاچقىلى بولمايدۇ. زىيارەت قىلىش ئۈچۈن تېلېگرامما ئارقىلىق كىرىڭ!</p>
+    </div>
+
     <!-- كىرىش كۆزنىكى (Login Overlay) -->
     <div id="loginOverlay">
         <div class="login-box">
             <h2>ئۇيغۇر كىنو ئەپىگە كىرىش</h2>
-            <p>ئىسمىڭىزنى ياكى باشقۇرغۇچى كودىنى كىرگۈزۈڭ</p>
+            <p>ئىسمىڭىزنى كىرگۈزۈپ يېڭى ھېسابات ئېچىڭ ياكى باشقۇرغۇچى سۈپىتىدە كىرىڭ!</p>
             <div class="form-group">
                 <label>ئىسمىڭىز / باشقۇرغۇچى ئاتى</label>
-                <input type="text" id="loginUsernameInput" class="form-control" placeholder="مەسىلەن: nasrulla ياكى باشقىلار">
+                <input type="text" id="loginUsernameInput" class="form-control" placeholder="مەسىلەن: ئەھمەد ياكى باشقىلار">
             </div>
             <div class="form-group">
                 <label>پارول (ئەگەر باشقۇرغۇچى بولسىڭىز)</label>
                 <input type="password" id="loginPasswordInput" class="form-control" placeholder="پارولنى كىرگۈزۈڭ">
             </div>
-            <button class="btn-submit" onclick="handleUserLogin()">سىستېمىغا كىرىش</button>
+            <button class="btn-submit" onclick="handleUserLogin()">سىستېمىغا كىرىش / ئېچىش</button>
         </div>
     </div>
 
@@ -229,10 +249,13 @@
 
         <div id="homeView" class="app-view active">
             <div class="user-card">
-                <div class="user-avatar-placeholder" id="uAvatarLetter">U</div>
-                <div class="user-details">
-                    <h4 id="uName">ئىشلەتكۈچى <span id="vipBadgeContainer"></span></h4>
+                <div class="user-card-left">
+                    <div class="user-avatar-placeholder" id="uAvatarLetter">U</div>
+                    <div class="user-details">
+                        <h4 id="uName">ئىشلەتكۈچى <span id="vipBadgeContainer"></span></h4>
+                    </div>
                 </div>
+                <button class="btn-logout" onclick="logoutUser()">چىقىش</button>
             </div>
             <div class="section-header">يېڭى قوشۇلغان فىلىملەر</div>
             <div class="movie-grid" id="homeMovieList"></div>
@@ -261,7 +284,7 @@
             </div>
         </div>
 
-        <!-- تۈزىتىلگەن: باشقۇرغۇچىغىلا كۆرۈنىدىغان قىسمى -->
+        <!-- باشقۇرغۇچىغىلا كۆرۈنىدىغان ئورۇن -->
         <div id="adminView" class="app-view">
             <div class="section-header">توربەتكە فىلىم يوللاش</div>
             <form id="addMovieForm" onsubmit="saveMovie(event)">
@@ -306,6 +329,17 @@
     </div>
 
     <script>
+        // تېلېگرامما ئىچىدە ئىكەنلىكىنى تەكشۈرۈش (تەلتەرەپ توربەتلەردە ئېچىشنى قەتتىي چەكلەش)
+        function checkTelegramEnvironment() {
+            const isTelegram = window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user;
+            // ئەگەر تېلېگرامما مۇھىتى بولمىسا (خالىغان بىر براۋزېردا ئېچىلسا) توسۇش ئېكرانىنى چىقىرىمىز
+            if (!isTelegram) {
+                document.getElementById('browserBlockOverlay').style.display = 'flex';
+                return false;
+            }
+            return true;
+        }
+
         const ADMIN_NAME = "nasrulla";
         const ADMIN_PASS = "652923";
         
@@ -316,7 +350,8 @@
         let allChats = [];
 
         window.initAppAfterFirebase = function() {
-            // ئالدى بىلەن localStorage دىن بۇرۇن كىرگەن-كەلمىگىنىنى تەكشۈرۈش
+            if (!checkTelegramEnvironment()) return;
+
             const savedUser = localStorage.getItem('uyghur_logged_user');
             if (savedUser) {
                 currentUser = JSON.parse(savedUser);
@@ -356,6 +391,11 @@
             initializeAppUI();
         }
 
+        function logoutUser() {
+            localStorage.removeItem('uyghur_logged_user');
+            location.reload();
+        }
+
         function initializeAppUI() {
             try {
                 autoRegisterUser(currentUser);
@@ -390,9 +430,7 @@
         function setupFirebaseListeners() {
             window.dbOnValue(window.dbRef(window.db, 'movies'), (snapshot) => {
                 const data = snapshot.val();
-                allMovies = data ? Object.values(data) : [
-                    { id: 1001, title: "ئالەم ئارا ساياھەت", poster: "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=400&q=80", archiveUrl: "https://archive.org/embed/Popeye_for_President", type: "free" }
-                ];
+                allMovies = data ? Object.values(data) : [];
                 renderHomeMovies();
             });
 
@@ -523,7 +561,7 @@
             window.dbSet(window.dbRef(window.db, 'photos/' + photoId), photoData);
             document.getElementById('addPhotoForm').reset();
             
-            alert('رەسىم مۇۋەپپەقىيەتلىك يوللاندى!');
+            alert('رەسىم دەرھال يوللاندى ۋە ئابونتلارغا كۆرۈندى!');
             switchView('galleryView', document.querySelectorAll('.nav-item')[2]);
         }
 
@@ -594,7 +632,7 @@
             window.dbSet(window.dbRef(window.db, 'movies/' + movieId), movieData);
             document.getElementById('addMovieForm').reset();
             
-            alert('فىلىم مۇۋەپپەقىيەتلىك يوللاندى!');
+            alert('فىلىم دەرھال يوللاندى ۋە ئابونتلارغا تارقىتىلدى!');
             switchView('homeView', document.querySelectorAll('.nav-item')[0]);
         }
 
