@@ -78,7 +78,6 @@
             -ms-user-select: none;
         }
 
-        /* 🔒 ئېكران سۈرىتى ئېلىشنىڭ (Screenshot) ئالدىنى ئېلىش ئۈچۈن قاراڭغۇلاشتۇرۇش قەۋىتى */
         .screenshot-shield {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background: transparent; z-index: 999999; pointer-events: none;
@@ -156,9 +155,8 @@
         .btn-submit { width: 100%; padding: 12px; background: var(--primary-color); border: none; border-radius: 8px; color: white; font-weight: 700; font-size: 14px; cursor: pointer; margin-top: 10px; }
 
         .users-list { background: var(--card-bg); border-radius: var(--radius); padding: 10px; margin-top: 15px; max-height: 350px; overflow-y: auto; }
-        .user-item-card { display: flex; align-items: center; gap: 10px; padding: 10px; border-bottom: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; transition: background 0.2s; }
-        .user-item-card:hover { background: #252528; }
-        .user-item-placeholder { background: #333; width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #fff; font-size: 16px; }
+        .user-item-card { display: flex; align-items: center; gap: 10px; padding: 10px; border-bottom: 1px solid var(--border-color); border-radius: 8px; transition: background 0.2s; }
+        .user-item-placeholder { background: #333; width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #fff; font-size: 16px; flex-shrink: 0; }
         .user-item-info { flex: 1; text-align: right; }
         .user-item-info strong { font-size: 13px; color: #fff; display: block; }
         .user-item-info span { font-size: 11px; color: #40c4ff; }
@@ -310,7 +308,6 @@
         <div class="player-body" id="playerContainer"></div>
     </div>
 
-    <!-- 🔍 رەسىملەرنى چوڭايتىپ كۆرسىتىش كۆزنىكى (Modal) -->
     <div id="imageModal" class="image-modal">
         <div class="image-modal-header">
             <span id="imageModalTitle" style="font-size: 13px; font-weight: 600;"></span>
@@ -380,8 +377,6 @@
                     avatarContainer.innerHTML = `<div class="user-avatar-placeholder">${currentUser.first_name.charAt(0).toUpperCase()}</div>`;
                 }
 
-                checkVipStatusUI();
-
                 if (currentUser.isAdmin) {
                     document.getElementById('adminNavItem').style.display = 'flex';
                     document.getElementById('headerRoleBadge').innerText = '👑 باشقۇرغۇچى';
@@ -414,6 +409,15 @@
             window.dbOnValue(window.dbRef(window.db, 'users'), (snapshot) => {
                 const data = snapshot.val();
                 allUsers = data ? Object.values(data) : [];
+                
+                // ھازىرقى ئابونتنىڭ VIP ھالىتىنى تەكشۈرۈپ يېڭىلاش
+                if (currentUser) {
+                    const matchedUser = allUsers.find(u => String(u.id) === String(currentUser.id));
+                    if (matchedUser) {
+                        currentUser.isVip = matchedUser.isVip || false;
+                    }
+                }
+                checkVipStatusUI();
                 renderAdminUserList();
             });
 
@@ -422,55 +426,31 @@
                 allChats = data ? Object.values(data) : [];
                 renderChatMessages();
             });
-
-            // Firebase دىن VIP ئەزالار تىزىملىكىنى ئوقۇش
-            window.dbOnValue(window.dbRef(window.db, 'vip_users'), (snapshot) => {
-                const data = snapshot.val() || {};
-                let vipIds = [];
-                for(let id in data) {
-                    if(data[id] === true) vipIds.push(String(id));
-                }
-                localStorage.setItem('uyghur_vip_users', JSON.stringify(vipIds));
-                checkVipStatusUI();
-                renderAdminUserList();
-            });
         }
 
         function checkVipStatusUI() {
-            const isVip = isUserVip(currentUser.id);
+            const isVip = isUserVip(currentUser?.id);
             const container = document.getElementById('vipBadgeContainer');
             if (container) container.innerHTML = isVip ? `<span class="vip-badge-tag">👑 VIP</span>` : '';
         }
 
         function isUserVip(userId) {
             if (currentUser?.isAdmin) return true;
-            try {
-                const vipUsers = JSON.parse(localStorage.getItem('uyghur_vip_users')) || [];
-                return vipUsers.includes(String(userId));
-            } catch(e) { return false; }
+            const userObj = allUsers.find(u => String(u.id) === String(userId));
+            return userObj ? Boolean(userObj.isVip) : false;
         }
 
         // 👑 باشقۇرغۇچى خالىغان ئابونتقا VIP بېرەلەيدۇ ياكى ئېلىۋېتەلەيدۇ
-        function toggleUserVipStatus(userId) {
+        function toggleUserVipStatus(userId, currentVipState) {
             if (!currentUser?.isAdmin) return;
-            let vipUsers = JSON.parse(localStorage.getItem('uyghur_vip_users')) || [];
-            const strId = String(userId);
-            let newStatus = false;
+            const newVipState = !currentVipState;
             
-            if (vipUsers.includes(strId)) {
-                vipUsers = vipUsers.filter(id => id !== strId);
-                newStatus = false;
-            } else {
-                vipUsers.push(strId);
-                newStatus = true;
-            }
-            
-            localStorage.setItem('uyghur_vip_users', JSON.stringify(vipUsers));
-            
-            // Firebase غا ساقلاش ئارقىلىق دەرھال يېڭىلاش
-            window.dbSet(window.dbRef(window.db, 'vip_users/' + strId), newStatus).then(() => {
+            const userRef = window.dbRef(window.db, 'users/' + userId + '/isVip');
+            window.dbSet(userRef, newVipState).then(() => {
                 renderAdminUserList();
                 checkVipStatusUI();
+            }).catch((err) => {
+                alert('خاتالىق كۆرۈلدى: ' + err.message);
             });
         }
 
@@ -487,12 +467,14 @@
             if (!user || !user.id) return;
             const userRef = window.dbRef(window.db, 'users/' + user.id);
             window.dbGet(userRef).then((snapshot) => {
+                const existingData = snapshot.val() || {};
                 window.dbSet(userRef, {
                     id: user.id,
                     name: user.first_name,
                     username: user.username || '',
                     isAdmin: user.isAdmin || false,
-                    date: new Date().toLocaleDateString()
+                    isVip: existingData.isVip !== undefined ? existingData.isVip : false,
+                    date: existingData.date || new Date().toLocaleDateString()
                 });
             });
         }
@@ -570,7 +552,6 @@
             alert('رەسىم يوللاندى!');
         }
 
-        // 🔍 رەسىملەرنى چوڭايتىپ كۆرسىتىش פונкციيىسى
         function openImageViewer(url, title) {
             document.getElementById('imageModalTitle').innerText = title;
             document.getElementById('modalFullImage').src = url;
@@ -630,15 +611,15 @@
             if(countEl) countEl.innerText = allUsers.length;
             
             container.innerHTML = allUsers.map(u => {
-                const vip = isUserVip(u.id);
+                const vip = Boolean(u.isVip);
                 return `
                     <div class="user-item-card">
-                        <div class="user-item-placeholder">${u.name.charAt(0)}</div>
+                        <div class="user-item-placeholder">${u.name ? u.name.charAt(0) : 'U'}</div>
                         <div class="user-item-info">
-                            <strong>${u.name} ${vip ? '👑' : ''}</strong>
+                            <strong>${u.name || 'ئابونت'} ${vip ? '👑' : ''}</strong>
                             <span>${u.username ? '@' + u.username : 'ID: ' + u.id}</span>
                         </div>
-                        <button class="btn-vip-toggle" style="background:${vip ? '#f44336' : '#ff9800'}; color:#fff;" onclick="toggleUserVipStatus('${u.id}')">${vip ? 'VIP چىقىرىش' : 'VIP قىلىش'}</button>
+                        <button class="btn-vip-toggle" style="background:${vip ? '#f44336' : '#ff9800'}; color:#fff;" onclick="toggleUserVipStatus('${u.id}', ${vip})">${vip ? 'VIP چىقىرىش' : 'VIP قىلىش'}</button>
                     </div>
                 `;
             }).join('');
@@ -664,7 +645,6 @@
 
         function playMovie(title, url, type) {
             if (type === 'vip' && !isUserVip(currentUser?.id)) {
-                // تەلەپ بويىچە @Serdar98989898 غا ئۇچۇر قىلىدىغان قىلىندى
                 if (confirm('بۇ VIP فىلىم! كۆرۈش ئۈچۈن @Serdar98989898 غا ئۇچۇر قىلىپ VIP سالاھىيىتى ئېلىشىڭىز كېرەك. ھازىر ئۇچۇر قىلامسىز؟')) {
                     window.open(`https://t.me/Serdar98989898`, '_blank');
                 }
