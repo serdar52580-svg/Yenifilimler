@@ -64,6 +64,8 @@
             margin: 0; padding: 0; box-sizing: border-box;
             font-family: 'Noto Sans Arabic', -apple-system, BlinkMacSystemFont, sans-serif;
             -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none; /* تېلېگرامما ياكى تېلېفوندا ئۇلانما مەنسۇبات مەنبەسىنى بېسىپ تۇرۇشنى چەكلەش */
+            user-select: none; /* تېكىست ياكى رەسىملەرنى تاللاشنى چەكلەش */
         }
 
         body {
@@ -71,7 +73,6 @@
             color: var(--text-color);
             direction: rtl;
             padding-bottom: 70px;
-            user-select: none;
         }
 
         #browserBlockOverlay {
@@ -111,7 +112,7 @@
         }
 
         .user-card-left { display: flex; align-items: center; gap: 12px; }
-        .user-avatar-img { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary-color); }
+        .user-avatar-img { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary-color); pointer-events: none; }
         .user-avatar-placeholder { background: var(--primary-color); width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; color: white; font-weight: bold; }
 
         .user-details h4 { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
@@ -130,19 +131,19 @@
         .movie-card, .gallery-card {
             background: var(--card-bg); border-radius: var(--radius); overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.3); cursor: pointer; position: relative;
         }
-        .movie-card img, .gallery-card img { width: 100%; height: 145px; object-fit: cover; display: block; }
+        .movie-card img, .gallery-card img { width: 100%; height: 145px; object-fit: cover; display: block; pointer-events: none; -webkit-user-drag: none; }
         .gallery-card img { height: 150px; }
         .movie-card-info, .gallery-card-title { padding: 8px; font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .gallery-card-title { font-size: 11px; color: #ddd; text-align: center; }
 
-        .movie-badge-vip { position: absolute; top: 6px; right: 6px; background: linear-gradient(45deg, #ffd700, #ff9800); color: #000; font-size: 9px; padding: 2px 6px; border-radius: 4px; font-weight: bold; z-index: 2; }
-        .movie-badge-free { position: absolute; top: 6px; right: 6px; background: #4caf50; color: #fff; font-size: 9px; padding: 2px 6px; border-radius: 4px; font-weight: bold; z-index: 2; }
+        .movie-badge-vip { position: absolute; top: 6px; right: 6px; background: linear-gradient(45deg, #ffd700, #ff9800); color: #000; font-size: 9px; padding: 2px 6px; border-radius: 4px; font-weight: bold; z-index: 2; pointer-events: none; }
+        .movie-badge-free { position: absolute; top: 6px; right: 6px; background: #4caf50; color: #fff; font-size: 9px; padding: 2px 6px; border-radius: 4px; font-weight: bold; z-index: 2; pointer-events: none; }
 
         .btn-delete-item { position: absolute; top: 6px; left: 6px; background: rgba(229, 9, 20, 0.9); color: white; border: none; width: 26px; height: 26px; border-radius: 50%; font-size: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10; box-shadow: 0 2px 6px rgba(0,0,0,0.4); }
 
         .form-group { margin-bottom: 12px; text-align: right; }
         .form-group label { display: block; font-size: 11px; color: var(--text-muted); margin-bottom: 5px; }
-        .form-control { width: 100%; padding: 10px 12px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; font-size: 13px; outline: none; }
+        .form-control { width: 100%; padding: 10px 12px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; font-size: 13px; outline: none; user-select: text; }
         .btn-submit { width: 100%; padding: 12px; background: var(--primary-color); border: none; border-radius: 8px; color: white; font-weight: 700; font-size: 14px; cursor: pointer; margin-top: 10px; }
 
         .users-list { background: var(--card-bg); border-radius: var(--radius); padding: 10px; margin-top: 15px; max-height: 350px; overflow-y: auto; }
@@ -171,10 +172,10 @@
         .chat-msg-item.my-msg .chat-msg-author { color: #ffe082; }
         .btn-delete-msg { background: none; border: none; color: rgba(255, 255, 255, 0.6); font-size: 11px; cursor: pointer; padding: 0 3px; }
         .btn-delete-msg:hover { color: #ff5252; }
-        .chat-msg-text { font-size: 13.5px; line-height: 1.4; word-break: break-word; color: #f1f1f1; }
+        .chat-msg-text { font-size: 13.5px; line-height: 1.4; word-break: break-word; color: #f1f1f1; user-select: text; }
         .chat-msg-time { font-size: 9.5px; color: rgba(255, 255, 255, 0.5); margin-top: 4px; text-align: left; }
         .chat-input-bar { padding: 12px 14px; background: #1c1c1e; display: flex; gap: 10px; align-items: center; border-top: 1px solid var(--border-color); }
-        .chat-input-bar input { flex: 1; padding: 11px 14px; background: #2c2c2e; border: 1px solid var(--border-color); border-radius: 20px; color: #fff; font-size: 13.5px; outline: none; }
+        .chat-input-bar input { flex: 1; padding: 11px 14px; background: #2c2c2e; border: 1px solid var(--border-color); border-radius: 20px; color: #fff; font-size: 13.5px; outline: none; user-select: text; }
         .chat-input-bar button { background: var(--primary-color); border: none; color: #fff; width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 15px; }
 
         .bottom-nav {
@@ -194,7 +195,7 @@
         .btn-close { color: #fff; font-size: 20px; background: none; border: none; cursor: pointer; }
     </style>
 </head>
-<body>
+<body oncontextmenu="return false;">
 
     <div id="browserBlockOverlay">
         <i class="fa-solid fa-triangle-exclamation"></i>
@@ -425,7 +426,6 @@
             renderAdminUserList();
             checkVipStatusUI();
             
-            // Firebase دەمۇ ساقلاش (بارلىق ئابونتلارنىڭ VIP ھالىتىنى ماس قەدەملەش ئۈچۈن)
             window.dbSet(window.dbRef(window.db, 'vip_users/' + strId), vipUsers.includes(strId));
         }
 
@@ -529,9 +529,9 @@
             const container = document.getElementById('galleryContainer');
             if (!container) return;
             container.innerHTML = allPhotos.map(p => `
-                <div class="gallery-card">
+                <div class="gallery-card" oncontextmenu="return false;">
                     ${currentUser?.isAdmin ? `<button class="btn-delete-item" onclick="event.stopPropagation(); deletePhoto(${p.id})"><i class="fa-solid fa-xmark"></i></button>` : ''}
-                    <img src="${p.url}" alt="${p.title}">
+                    <img src="${p.url}" alt="${p.title}" oncontextmenu="return false;">
                     <div class="gallery-card-title">${p.title}</div>
                 </div>
             `).join('');
@@ -551,11 +551,11 @@
             const container = document.getElementById('homeMovieList');
             if (!container) return;
             container.innerHTML = allMovies.map(m => `
-                <div class="movie-card">
+                <div class="movie-card" oncontextmenu="return false;">
                     ${currentUser?.isAdmin ? `<button class="btn-delete-item" onclick="event.stopPropagation(); deleteMovie(${m.id})"><i class="fa-solid fa-xmark"></i></button>` : ''}
                     <div onclick="playMovie('${m.title}', '${m.archiveUrl}', '${m.type}')">
                         <div class="${m.type === 'vip' ? 'movie-badge-vip' : 'movie-badge-free'}">${m.type === 'vip' ? '👑 VIP' : 'ھەقسىز'}</div>
-                        <img src="${m.poster}" alt="${m.title}">
+                        <img src="${m.poster}" alt="${m.title}" oncontextmenu="return false;">
                         <div class="movie-card-info"><div class="movie-card-title">${m.title}</div></div>
                     </div>
                 </div>
@@ -617,7 +617,6 @@
         function playMovie(title, url, type) {
             if (type === 'vip' && !isUserVip(currentUser?.id)) {
                 if (confirm('بۇ VIP فىلىم! كۆرۈش ئۈچۈن سىزدە VIP سالاھىيىتى بولۇشى كېرەك. باشقۇرغۇچىغا ئۇچۇر قىلىپ VIP بولۇشنى خالامسىز؟')) {
-                    // باشقۇرغۇچىنىڭ ئات دىسى ياكى ID سى ئارقىلىق بىۋاسىتە خەۋەرلىشىش (ئەگەر ئات دىسى بولسا ئۇلانما ئېچىلىدۇ)
                     window.open(`https://t.me/nasrulla`, '_blank');
                 }
                 return;
@@ -636,11 +635,11 @@
             const query = document.getElementById('searchInput').value.toLowerCase().trim();
             const filtered = allMovies.filter(m => m.title.toLowerCase().includes(query));
             document.getElementById('searchMovieList').innerHTML = filtered.map(m => `
-                <div class="movie-card">
+                <div class="movie-card" oncontextmenu="return false;">
                     ${currentUser?.isAdmin ? `<button class="btn-delete-item" onclick="event.stopPropagation(); deleteMovie(${m.id})"><i class="fa-solid fa-xmark"></i></button>` : ''}
                     <div onclick="playMovie('${m.title}', '${m.archiveUrl}', '${m.type}')">
                         <div class="${m.type === 'vip' ? 'movie-badge-vip' : 'movie-badge-free'}">${m.type === 'vip' ? '👑 VIP' : 'ھەقسىز'}</div>
-                        <img src="${m.poster}" alt="${m.title}">
+                        <img src="${m.poster}" alt="${m.title}" oncontextmenu="return false;">
                         <div class="movie-card-info"><div class="movie-card-title">${m.title}</div></div>
                     </div>
                 </div>
