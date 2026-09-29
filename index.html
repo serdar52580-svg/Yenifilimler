@@ -4,12 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     
-    <!-- Cache Buster Meta Tags -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
 
-    <title>ئۇيغۇر كىنو - Telegram Mini App</title>
+    <title>ئۇيغۇر كىنو - Mini App</title>
 
     <script src="https://telegram.org/js/telegram-web-app.js?v=3.0"></script>
     
@@ -18,7 +17,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, set, get, child, remove, onValue, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        // 🔥 سىزنىڭ Firebase ئۇچۇرلىرىڭىز بىرلەشتۈرۈلدى
         const firebaseConfig = {
             apiKey: "AIzaSyDYDqUVN5SUUIsxuvrB3A4S-zoXDPVzx5g",
             authDomain: "uyghur-98.firebaseapp.com",
@@ -32,7 +30,6 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // پۈتۈن פונكسىيەلەرنى دۇنياۋى (global) قىلىش
         window.db = db;
         window.dbRef = ref;
         window.dbSet = set;
@@ -77,22 +74,25 @@
             user-select: none;
         }
 
-        #telegramOnlyOverlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(15, 15, 15, 0.98);
-            z-index: 9999;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            padding: 20px;
+        /* كىرىش ئېكرانى (Login Screen) */
+        #loginOverlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: var(--tg-theme-bg); z-index: 9999;
+            display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px;
         }
+        .login-box {
+            background: var(--card-bg); border: 1px solid var(--border-color);
+            padding: 24px; border-radius: 16px; width: 100%; max-width: 340px; text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .login-box h2 { font-size: 18px; color: var(--primary-color); margin-bottom: 8px; }
+        .login-box p { font-size: 12px; color: var(--text-muted); margin-bottom: 20px; }
 
-        #telegramOnlyOverlay i { font-size: 60px; color: #40c4ff; margin-bottom: 15px; }
-        #telegramOnlyOverlay h2 { font-size: 18px; margin-bottom: 10px; }
-        #telegramOnlyOverlay p { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; }
+        #telegramOnlyOverlay {
+            display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 15, 15, 0.98); z-index: 9999;
+            flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px;
+        }
 
         .btn-join-channel {
             display: inline-block; background: #24A1DE; color: white;
@@ -115,11 +115,7 @@
             display: flex; align-items: center; gap: 12px; margin-bottom: 16px; border: 1px solid var(--border-color);
         }
 
-        .user-avatar-img, .user-avatar-placeholder {
-            width: 48px; height: 48px; border-radius: 50%;
-        }
-        .user-avatar-img { object-fit: cover; border: 2px solid var(--primary-color); }
-        .user-avatar-placeholder { background: var(--primary-color); display: flex; align-items: center; justify-content: center; font-size: 20px; color: white; font-weight: bold; }
+        .user-avatar-placeholder { background: var(--primary-color); width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; color: white; font-weight: bold; }
 
         .user-details h4 { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
         .vip-badge-tag { background: linear-gradient(45deg, #ffd700, #ff9800); color: #000; font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
@@ -145,17 +141,15 @@
         .movie-badge-vip { position: absolute; top: 6px; right: 6px; background: linear-gradient(45deg, #ffd700, #ff9800); color: #000; font-size: 9px; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
         .movie-badge-free { position: absolute; top: 6px; right: 6px; background: #4caf50; color: #fff; font-size: 9px; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
 
-        .form-group { margin-bottom: 12px; }
+        .form-group { margin-bottom: 12px; text-align: right; }
         .form-group label { display: block; font-size: 11px; color: var(--text-muted); margin-bottom: 5px; }
         .form-control { width: 100%; padding: 10px 12px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; font-size: 13px; outline: none; }
         .btn-submit { width: 100%; padding: 12px; background: var(--primary-color); border: none; border-radius: 8px; color: white; font-weight: 700; font-size: 14px; cursor: pointer; margin-top: 10px; }
 
         .users-list { background: var(--card-bg); border-radius: var(--radius); padding: 10px; margin-top: 15px; max-height: 350px; overflow-y: auto; }
         .user-item-card { display: flex; align-items: center; gap: 10px; padding: 10px; border-bottom: 1px solid var(--border-color); border-radius: 8px; }
-        .user-item-avatar, .user-item-placeholder { width: 42px; height: 42px; border-radius: 50%; }
-        .user-item-avatar { object-fit: cover; }
-        .user-item-placeholder { background: #333; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #fff; font-size: 16px; }
-        .user-item-info { flex: 1; }
+        .user-item-placeholder { background: #333; width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #fff; font-size: 16px; }
+        .user-item-info { flex: 1; text-align: right; }
         .user-item-info strong { font-size: 13px; color: #fff; display: block; }
         .user-item-info span { font-size: 11px; color: #40c4ff; }
         .btn-vip-toggle { background: #ff9800; color: #000; border: none; padding: 5px 10px; font-size: 10px; font-weight: bold; border-radius: 6px; cursor: pointer; }
@@ -169,9 +163,7 @@
         .chat-messages { flex: 1; padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; scroll-behavior: smooth; }
         .chat-msg-item { display: flex; gap: 10px; align-items: flex-end; max-width: 80%; }
         .chat-msg-item.my-msg { align-self: flex-end; flex-direction: row-reverse; }
-        .chat-msg-avatar, .chat-msg-avatar-ph { width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0; }
-        .chat-msg-avatar { object-fit: cover; border: 1.5px solid var(--border-color); }
-        .chat-msg-avatar-ph { background: var(--primary-color); display: flex; align-items: center; justify-content: center; font-size: 14px; color: #fff; font-weight: bold; }
+        .chat-msg-avatar-ph { width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0; background: var(--primary-color); display: flex; align-items: center; justify-content: center; font-size: 14px; color: #fff; font-weight: bold; }
         .chat-msg-body { background: #252528; padding: 10px 14px; border-radius: 16px 16px 16px 4px; position: relative; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
         .chat-msg-item.my-msg .chat-msg-body { background: #e50914; border-radius: 16px 16px 4px 16px; }
         .chat-msg-header { display: flex; justify-content: space-between; align-items: center; gap: 15px; margin-bottom: 4px; }
@@ -204,6 +196,23 @@
 </head>
 <body>
 
+    <!-- كىرىش كۆزنىكى (Login Overlay) -->
+    <div id="loginOverlay">
+        <div class="login-box">
+            <h2>ئۇيغۇر كىنو ئەپىگە كىرىش</h2>
+            <p>ئىسمىڭىزنى ياكى باشقۇرغۇچى كودىنى كىرگۈزۈڭ</p>
+            <div class="form-group">
+                <label>ئىسمىڭىز / باشقۇرغۇچى ئاتى</label>
+                <input type="text" id="loginUsernameInput" class="form-control" placeholder="مەسىلەن: nasrulla ياكى باشقىلار">
+            </div>
+            <div class="form-group">
+                <label>پارول (ئەگەر باشقۇرغۇچى بولسىڭىز)</label>
+                <input type="password" id="loginPasswordInput" class="form-control" placeholder="پارولنى كىرگۈزۈڭ">
+            </div>
+            <button class="btn-submit" onclick="handleUserLogin()">سىستېمىغا كىرىش</button>
+        </div>
+    </div>
+
     <div id="telegramOnlyOverlay">
         <i class="fa-brands fa-telegram"></i>
         <h2>كىنو قانىلىمىزغا ئەزا بولۇڭ</h2>
@@ -215,12 +224,12 @@
     <div id="appContainer">
         <div class="app-header">
             <div class="app-title"><i class="fa-solid fa-play-circle"></i> ئۇيغۇر كىنو Mini App</div>
-            <div style="font-size: 11px; color: #40c4ff;"><i class="fa-brands fa-telegram"></i> Telegram</div>
+            <div style="font-size: 11px; color: #40c4ff;"><span id="headerRoleBadge">ئابونت</span></div>
         </div>
 
         <div id="homeView" class="app-view active">
             <div class="user-card">
-                <div id="uAvatarContainer"></div>
+                <div class="user-avatar-placeholder" id="uAvatarLetter">U</div>
                 <div class="user-details">
                     <h4 id="uName">ئىشلەتكۈچى <span id="vipBadgeContainer"></span></h4>
                 </div>
@@ -252,6 +261,7 @@
             </div>
         </div>
 
+        <!-- تۈزىتىلگەن: باشقۇرغۇچىغىلا كۆرۈنىدىغان قىسمى -->
         <div id="adminView" class="app-view">
             <div class="section-header">توربەتكە فىلىم يوللاش</div>
             <form id="addMovieForm" onsubmit="saveMovie(event)">
@@ -296,25 +306,58 @@
     </div>
 
     <script>
-        const ADMIN_TELEGRAM_ID = "8739045571";
-        const tg = window.Telegram?.WebApp;
+        const ADMIN_NAME = "nasrulla";
+        const ADMIN_PASS = "652923";
+        
         let currentUser = null;
-
         let allMovies = [];
         let allPhotos = [];
         let allUsers = [];
         let allChats = [];
 
         window.initAppAfterFirebase = function() {
-            try {
-                if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
-                    currentUser = tg.initDataUnsafe.user;
-                    tg.ready();
-                    tg.expand();
-                } else {
-                    currentUser = { id: 8739045571, first_name: "باشقۇرغۇچى", username: "admin", photo_url: null };
-                }
+            // ئالدى بىلەن localStorage دىن بۇرۇن كىرگەن-كەلمىگىنىنى تەكشۈرۈش
+            const savedUser = localStorage.getItem('uyghur_logged_user');
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                document.getElementById('loginOverlay').style.display = 'none';
+                initializeAppUI();
+            } else {
+                document.getElementById('loginOverlay').style.display = 'flex';
+            }
+        };
 
+        function handleUserLogin() {
+            const nameInput = document.getElementById('loginUsernameInput').value.trim();
+            const passInput = document.getElementById('loginPasswordInput').value.trim();
+
+            if (!nameInput) {
+                alert('ئىسمىڭىزنى كىرگۈزۈڭ!');
+                return;
+            }
+
+            let isAdmin = false;
+            if (nameInput === ADMIN_NAME) {
+                if (passInput !== ADMIN_PASS) {
+                    alert('باشقۇرغۇچى پارۇلى خاتتا!');
+                    return;
+                }
+                isAdmin = true;
+            }
+
+            currentUser = {
+                id: isAdmin ? 'admin_nasrulla' : 'user_' + Date.now(),
+                first_name: nameInput,
+                isAdmin: isAdmin
+            };
+
+            localStorage.setItem('uyghur_logged_user', JSON.stringify(currentUser));
+            document.getElementById('loginOverlay').style.display = 'none';
+            initializeAppUI();
+        }
+
+        function initializeAppUI() {
+            try {
                 autoRegisterUser(currentUser);
 
                 const hasSeen = localStorage.getItem(`seen_prompt_${currentUser.id}`);
@@ -325,18 +368,16 @@
                     overlay.style.display = 'none';
                 }
 
-                document.getElementById('uName').innerText = `${currentUser.first_name || 'ئىشلەتكۈچى'}`;
+                document.getElementById('uName').innerText = currentUser.first_name;
+                document.getElementById('uAvatarLetter').innerText = currentUser.first_name.charAt(0).toUpperCase();
                 checkVipStatusUI();
 
-                const avatarBox = document.getElementById('uAvatarContainer');
-                if (currentUser.photo_url) {
-                    avatarBox.innerHTML = `<img src="${currentUser.photo_url}" class="user-avatar-img">`;
-                } else {
-                    avatarBox.innerHTML = `<div class="user-avatar-placeholder">${(currentUser.first_name || 'U').charAt(0).toUpperCase()}</div>`;
-                }
-
-                if (String(currentUser.id) === String(ADMIN_TELEGRAM_ID)) {
+                if (currentUser.isAdmin) {
                     document.getElementById('adminNavItem').style.display = 'flex';
+                    document.getElementById('headerRoleBadge').innerText = '👑 باشقۇرغۇچى';
+                } else {
+                    document.getElementById('adminNavItem').style.display = 'none';
+                    document.getElementById('headerRoleBadge').innerText = 'ئابونت';
                 }
 
                 setupFirebaseListeners();
@@ -344,7 +385,7 @@
             } catch(e) {
                 console.error(e);
             }
-        };
+        }
 
         function setupFirebaseListeners() {
             window.dbOnValue(window.dbRef(window.db, 'movies'), (snapshot) => {
@@ -381,7 +422,7 @@
         }
 
         function isUserVip(userId) {
-            if (String(userId) === String(ADMIN_TELEGRAM_ID)) return true;
+            if (currentUser?.isAdmin) return true;
             try {
                 const vipUsers = JSON.parse(localStorage.getItem('uyghur_vip_users')) || [];
                 return vipUsers.includes(String(userId));
@@ -389,6 +430,7 @@
         }
 
         function toggleUserVipStatus(userId) {
+            if (!currentUser?.isAdmin) return;
             let vipUsers = JSON.parse(localStorage.getItem('uyghur_vip_users')) || [];
             const strId = String(userId);
             if (vipUsers.includes(strId)) {
@@ -401,8 +443,7 @@
         }
 
         function openChannelLink() {
-            if (tg && tg.openTelegramLink) tg.openTelegramLink(`https://t.me/xax9898`);
-            else window.open(`https://t.me/xax9898`, '_blank');
+            window.open(`https://t.me/xax9898`, '_blank');
         }
 
         function closeChannelPrompt() {
@@ -417,9 +458,8 @@
                 if (!snapshot.exists()) {
                     window.dbSet(userRef, {
                         id: user.id,
-                        name: `${user.first_name || ''}`.trim(),
-                        username: user.username || '',
-                        photo_url: user.photo_url || null,
+                        name: user.first_name,
+                        isAdmin: user.isAdmin || false,
                         date: new Date().toLocaleDateString()
                     });
                 }
@@ -435,7 +475,6 @@
                 id: chatId,
                 userId: currentUser.id,
                 name: currentUser.first_name,
-                photo: currentUser.photo_url,
                 text: input.value.trim(),
                 time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
             };
@@ -445,24 +484,23 @@
         }
 
         function deleteChatMessage(msgId) {
-            if (String(currentUser?.id) !== String(ADMIN_TELEGRAM_ID)) return;
+            if (!currentUser?.isAdmin) return;
             window.dbRemove(window.dbRef(window.db, 'chats/' + msgId));
         }
 
         function renderChatMessages() {
             const container = document.getElementById('chatMessageList');
             if (!container) return;
-            const isAdmin = String(currentUser?.id) === String(ADMIN_TELEGRAM_ID);
 
             container.innerHTML = allChats.map(c => {
                 const isMine = String(c.userId) === String(currentUser?.id);
                 return `
                     <div class="chat-msg-item ${isMine ? 'my-msg' : ''}">
-                        ${c.photo ? `<img src="${c.photo}" class="chat-msg-avatar">` : `<div class="chat-msg-avatar-ph">${c.name.charAt(0)}</div>`}
+                        <div class="chat-msg-avatar-ph">${c.name.charAt(0)}</div>
                         <div class="chat-msg-body">
                             <div class="chat-msg-header">
                                 <span class="chat-msg-author">${c.name}</span>
-                                ${isAdmin ? `<button class="btn-delete-msg" onclick="deleteChatMessage(${c.id})" title="ئۆچۈرۈش"><i class="fa-solid fa-trash-can"></i></button>` : ''}
+                                ${currentUser?.isAdmin ? `<button class="btn-delete-msg" onclick="deleteChatMessage(${c.id})" title="ئۆچۈرۈش"><i class="fa-solid fa-trash-can"></i></button>` : ''}
                             </div>
                             <div class="chat-msg-text">${c.text}</div>
                             <div class="chat-msg-time">${c.time}</div>
@@ -475,6 +513,7 @@
 
         function savePhoto(e) {
             e.preventDefault();
+            if (!currentUser?.isAdmin) return;
             const title = document.getElementById('photoTitle').value;
             const url = document.getElementById('photoUrl').value;
             
@@ -484,7 +523,7 @@
             window.dbSet(window.dbRef(window.db, 'photos/' + photoId), photoData);
             document.getElementById('addPhotoForm').reset();
             
-            alert('رەسىم مۇۋەپپەقىيەتلىك يوللاندى ۋە ھەممە ئادەمگە كۆرүндى!');
+            alert('رەسىم مۇۋەپپەقىيەتلىك يوللاندى!');
             switchView('galleryView', document.querySelectorAll('.nav-item')[2]);
         }
 
@@ -500,7 +539,7 @@
         }
 
         function switchView(viewId, navElement) {
-            if (viewId === 'adminView' && String(currentUser?.id) !== String(ADMIN_TELEGRAM_ID)) {
+            if (viewId === 'adminView' && !currentUser?.isAdmin) {
                 alert('ھوقۇقىڭىز يوق!'); return;
             }
             document.querySelectorAll('.app-view').forEach(v => v.classList.remove('active'));
@@ -531,8 +570,8 @@
                 const vip = isUserVip(u.id);
                 return `
                     <div class="user-item-card">
-                        ${u.photo_url ? `<img src="${u.photo_url}" class="user-item-avatar">` : `<div class="user-item-placeholder">${u.name.charAt(0)}</div>`}
-                        <div class="user-item-info"><strong>${u.name} ${vip ? '👑' : ''}</strong><span>@${u.username || 'يوق'}</span></div>
+                        <div class="user-item-placeholder">${u.name.charAt(0)}</div>
+                        <div class="user-item-info"><strong>${u.name} ${vip ? '👑' : ''}</strong><span>${u.isAdmin ? 'باشقۇرغۇچى' : 'ئابونت'}</span></div>
                         <button class="btn-vip-toggle" onclick="toggleUserVipStatus('${u.id}')">${vip ? 'VIP ئۆچۈرۈش' : 'VIP قىلىش'}</button>
                     </div>
                 `;
@@ -541,6 +580,7 @@
 
         function saveMovie(e) {
             e.preventDefault();
+            if (!currentUser?.isAdmin) return;
             const title = document.getElementById('movieTitle').value;
             const poster = document.getElementById('moviePoster').value;
             let archiveUrl = document.getElementById('movieArchiveUrl').value;
@@ -554,7 +594,7 @@
             window.dbSet(window.dbRef(window.db, 'movies/' + movieId), movieData);
             document.getElementById('addMovieForm').reset();
             
-            alert('فىلىم مۇۋەپپەقىيەتلىك توربەتكە يوللاندى ۋە ھەممە ئادەمگە دەرھال كۆرүндى!');
+            alert('فىلىم مۇۋەپپەقىيەتلىك يوللاندى!');
             switchView('homeView', document.querySelectorAll('.nav-item')[0]);
         }
 
