@@ -125,22 +125,155 @@
         .user-item-info span { font-size: 11px; color: #40c4ff; }
         .btn-vip-toggle { background: #ff9800; color: #000; border: none; padding: 5px 10px; font-size: 10px; font-weight: bold; border-radius: 6px; cursor: pointer; }
 
-        .chat-container { display: flex; flex-direction: column; height: calc(100vh - 160px); background: var(--card-bg); border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border-color); }
-        .chat-messages { flex: 1; padding: 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
-        .chat-msg-item { display: flex; gap: 10px; align-items: flex-start; max-width: 85%; }
-        .chat-msg-item.my-msg { align-self: flex-end; flex-direction: row-reverse; }
-        .chat-msg-avatar, .chat-msg-avatar-ph { width: 32px; height: 32px; border-radius: 50%; }
-        .chat-msg-avatar { object-fit: cover; }
+        /* 🌟 كۆركەم ۋە راۋان پاراڭلىشىش بېتى (Modern Chat Styles) */
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 150px);
+            background: linear-gradient(180deg, #161618 0%, #0f0f0f 100%);
+            border-radius: var(--radius);
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 16px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            scroll-behavior: smooth;
+        }
+
+        .chat-msg-item {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+            max-width: 80%;
+            animation: fadeInMsg 0.25s ease-out;
+        }
+
+        @keyframes fadeInMsg {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .chat-msg-item.my-msg {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+
+        .chat-msg-avatar, .chat-msg-avatar-ph {
+            width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
+        }
+        .chat-msg-avatar { object-fit: cover; border: 1.5px solid var(--border-color); }
         .chat-msg-avatar-ph { background: var(--primary-color); display: flex; align-items: center; justify-content: center; font-size: 14px; color: #fff; font-weight: bold; }
-        .chat-msg-body { background: #2c2c2e; padding: 8px 12px; border-radius: 12px; }
-        .chat-msg-item.my-msg .chat-msg-body { background: #e50914; }
-        .chat-msg-author { font-size: 11px; font-weight: bold; color: #40c4ff; margin-bottom: 2px; }
-        .chat-msg-item.my-msg .chat-msg-author { color: #ffeb3b; text-align: left; }
-        .chat-msg-text { font-size: 13px; word-break: break-word; }
-        .chat-msg-time { font-size: 9px; color: var(--text-muted); margin-top: 4px; text-align: left; }
-        .chat-input-bar { padding: 8px 10px; background: #161618; display: flex; gap: 8px; border-top: 1px solid var(--border-color); }
-        .chat-input-bar input { flex: 1; padding: 10px; background: #2c2c2e; border: none; border-radius: 8px; color: #fff; font-size: 13px; outline: none; }
-        .chat-input-bar button { background: var(--primary-color); border: none; color: #fff; padding: 0 16px; border-radius: 8px; cursor: pointer; font-size: 16px; }
+
+        .chat-msg-body {
+            background: #252528;
+            padding: 10px 14px;
+            border-radius: 16px 16px 16px 4px;
+            position: relative;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+
+        .chat-msg-item.my-msg .chat-msg-body {
+            background: #e50914;
+            border-radius: 16px 16px 4px 16px;
+        }
+
+        .chat-msg-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 4px;
+        }
+
+        .chat-msg-author {
+            font-size: 11px;
+            font-weight: 700;
+            color: #40c4ff;
+        }
+
+        .chat-msg-item.my-msg .chat-msg-author {
+            color: #ffe082;
+        }
+
+        /* 🗑️ باشقۇرغۇچى ئۈچۈن ئۆچۈرۈش كۇنپۇكى */
+        .btn-delete-msg {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 11px;
+            cursor: pointer;
+            padding: 0 3px;
+            transition: color 0.2s;
+        }
+        .btn-delete-msg:hover {
+            color: #ff5252;
+        }
+
+        .chat-msg-text {
+            font-size: 13.5px;
+            line-height: 1.4;
+            word-break: break-word;
+            color: #f1f1f1;
+        }
+
+        .chat-msg-time {
+            font-size: 9.5px;
+            color: rgba(255, 255, 255, 0.5);
+            margin-top: 4px;
+            text-align: left;
+        }
+
+        .chat-input-bar {
+            padding: 12px 14px;
+            background: #1c1c1e;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .chat-input-bar input {
+            flex: 1;
+            padding: 11px 14px;
+            background: #2c2c2e;
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            color: #fff;
+            font-size: 13.5px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .chat-input-bar input:focus {
+            border-color: var(--primary-color);
+        }
+
+        .chat-input-bar button {
+            background: var(--primary-color);
+            border: none;
+            color: #fff;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 15px;
+            box-shadow: 0 2px 8px rgba(229, 9, 20, 0.4);
+            transition: transform 0.1s;
+        }
+
+        .chat-input-bar button:active {
+            transform: scale(0.92);
+        }
 
         .bottom-nav {
             position: fixed; bottom: 0; left: 0; right: 0; height: 60px;
@@ -198,6 +331,7 @@
             <div class="gallery-grid" id="galleryContainer"></div>
         </div>
 
+        <!-- 💬 زامانىۋى ۋە كۆركەم پاراڭلىشىش بېتى -->
         <div id="chatView" class="app-view">
             <div class="section-header">ئاممىۋى پاراڭلىشىش سورۇنى</div>
             <div class="chat-container">
@@ -257,6 +391,14 @@
         const BOT_USERNAME = "Uyghur98_bot";
         const tg = window.Telegram?.WebApp;
         let currentUser = null;
+
+        // BroadcastChannel ئارقىلىق ئۇچۇرلارنىڭ ھەممە ئابونتلاردا تەڭ يېڭىلىنىشى قاتارلىقلار كاپالەتكە ئىگە قىلىنىدۇ
+        const chatSyncChannel = new BroadcastChannel('uyghur_chat_sync_channel');
+        chatSyncChannel.onmessage = (event) => {
+            if (event.data === 'refresh_chat') {
+                renderChatMessages();
+            }
+        };
 
         function initApp() {
             try {
@@ -352,6 +494,7 @@
             }
         }
 
+        /* 💬 پاراڭلىشىش ئىقتىدارلىرى */
         function sendChatMessage() {
             const input = document.getElementById('chatInputText');
             if (!input || !input.value.trim()) return;
@@ -367,22 +510,40 @@
             localStorage.setItem('uyghur_app_chat', JSON.stringify(chats));
             input.value = '';
             renderChatMessages();
+            chatSyncChannel.postMessage('refresh_chat');
+        }
+
+        function deleteChatMessage(msgId) {
+            if (String(currentUser?.id) !== String(ADMIN_TELEGRAM_ID)) return;
+            let chats = JSON.parse(localStorage.getItem('uyghur_app_chat')) || [];
+            chats = chats.filter(c => c.id !== msgId);
+            localStorage.setItem('uyghur_app_chat', JSON.stringify(chats));
+            renderChatMessages();
+            chatSyncChannel.postMessage('refresh_chat');
         }
 
         function renderChatMessages() {
             const container = document.getElementById('chatMessageList');
             if (!container) return;
             const chats = JSON.parse(localStorage.getItem('uyghur_app_chat')) || [];
-            container.innerHTML = chats.map(c => `
-                <div class="chat-msg-item ${String(c.userId) === String(currentUser?.id) ? 'my-msg' : ''}">
-                    ${c.photo ? `<img src="${c.photo}" class="chat-msg-avatar">` : `<div class="chat-msg-avatar-ph">${c.name.charAt(0)}</div>`}
-                    <div class="chat-msg-body">
-                        <div class="chat-msg-author">${c.name}</div>
-                        <div class="chat-msg-text">${c.text}</div>
-                        <div class="chat-msg-time">${c.time}</div>
+            const isAdmin = String(currentUser?.id) === String(ADMIN_TELEGRAM_ID);
+
+            container.innerHTML = chats.map(c => {
+                const isMine = String(c.userId) === String(currentUser?.id);
+                return `
+                    <div class="chat-msg-item ${isMine ? 'my-msg' : ''}">
+                        ${c.photo ? `<img src="${c.photo}" class="chat-msg-avatar">` : `<div class="chat-msg-avatar-ph">${c.name.charAt(0)}</div>`}
+                        <div class="chat-msg-body">
+                            <div class="chat-msg-header">
+                                <span class="chat-msg-author">${c.name}</span>
+                                ${isAdmin ? `<button class="btn-delete-msg" onclick="deleteChatMessage(${c.id})" title="ئۆچۈرۈش"><i class="fa-solid fa-trash-can"></i></button>` : ''}
+                            </div>
+                            <div class="chat-msg-text">${c.text}</div>
+                            <div class="chat-msg-time">${c.time}</div>
+                        </div>
                     </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
             container.scrollTop = container.scrollHeight;
         }
 
