@@ -398,16 +398,25 @@
         }
 
         function setupFirebaseListeners() {
+            // 🔥 فىلىملەرنى تېز ۋە توغرا يۈكلەش ئۈچۈن قوشۇلغان ئەلالاشتۇرۇش
             window.dbOnValue(window.dbRef(window.db, 'movies'), (snapshot) => {
                 const data = snapshot.val();
-                allMovies = data ? Object.values(data) : [];
+                if (data) {
+                    // ئەگەر Firebase دىن ئوبيېكت شەكلىدە كەلسە مەيلى، ماسلاشتۇرۇپ تىزىمغا ئايلاندۇرىمىز
+                    allMovies = Object.keys(data).map(key => ({
+                        id: key,
+                        ...data[key]
+                    })).reverse(); // يېڭى قوشۇلغان فىلىملەر ئالدىغا چىقىدىغان قىلىندى
+                } else {
+                    allMovies = [];
+                }
                 renderHomeMovies();
                 renderSearchMovies();
             });
 
             window.dbOnValue(window.dbRef(window.db, 'photos'), (snapshot) => {
                 const data = snapshot.val();
-                allPhotos = data ? Object.values(data) : [];
+                allPhotos = data ? Object.values(data).reverse() : [];
                 renderGallery();
             });
 
@@ -444,7 +453,6 @@
             return userObj ? Boolean(userObj.isVip) : false;
         }
 
-        // 👑 VIP قىلىش ياكى VIPدىن قالدۇرۇش
         function toggleUserVipStatus(userId, currentVipState) {
             if (!currentUser?.isAdmin) return;
             const newVipState = !currentVipState;
@@ -458,7 +466,6 @@
             });
         }
 
-        // 🗑️ ئابونتنى سىستېمىدىن ئۆچۈرۈۋېتىش
         function deleteUserAccount(userId, userName) {
             if (!currentUser?.isAdmin) return;
             if (confirm(`«${userName}» نى توربەت تىزىملىكىدىن ئۆچۈرەمسىز؟`)) {
@@ -470,7 +477,6 @@
             }
         }
 
-        // ✉️ ئابونتقا ئۇچۇر قىلىش (ئىشلەتكۈچى تەنامى بار بولسا ئاچىدۇ ياكى ID ئارقىلىق)
         function messageUser(username, userId) {
             if (username && username.trim() !== '') {
                 window.open(`https://t.me/${username.replace('@', '')}`, '_blank');
@@ -613,9 +619,15 @@
         function renderHomeMovies() {
             const container = document.getElementById('homeMovieList');
             if (!container) return;
+            
+            if (allMovies.length === 0) {
+                container.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 20px; font-size: 13px;">ھازىرچە فىلىم يوق</div>';
+                return;
+            }
+
             container.innerHTML = allMovies.map(m => `
                 <div class="movie-card" oncontextmenu="return false;">
-                    ${currentUser?.isAdmin ? `<button class="btn-delete-item" onclick="event.stopPropagation(); deleteMovie(${m.id})"><i class="fa-solid fa-xmark"></i></button>` : ''}
+                    ${currentUser?.isAdmin ? `<button class="btn-delete-item" onclick="event.stopPropagation(); deleteMovie('${m.id}')"><i class="fa-solid fa-xmark"></i></button>` : ''}
                     <div onclick="playMovie('${m.title}', '${m.archiveUrl}', '${m.type}')">
                         <div class="${m.type === 'vip' ? 'movie-badge-vip' : 'movie-badge-free'}">${m.type === 'vip' ? '👑 VIP' : 'ھەقسىز'}</div>
                         <img src="${m.poster}" alt="${m.title}" oncontextmenu="return false;">
@@ -691,10 +703,18 @@
 
         function handleSearch() {
             const query = document.getElementById('searchInput').value.toLowerCase().trim();
-            const filtered = allMovies.filter(m => m.title.toLowerCase().includes(query));
-            document.getElementById('searchMovieList').innerHTML = filtered.map(m => `
+            const filtered = allMovies.filter(m => m.title && m.title.toLowerCase().includes(query));
+            const container = document.getElementById('searchMovieList');
+            if (!container) return;
+
+            if (filtered.length === 0) {
+                container.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 20px; font-size: 13px;">ھېچقانداق فىلىم تېپىلمىدى</div>';
+                return;
+            }
+
+            container.innerHTML = filtered.map(m => `
                 <div class="movie-card" oncontextmenu="return false;">
-                    ${currentUser?.isAdmin ? `<button class="btn-delete-item" onclick="event.stopPropagation(); deleteMovie(${m.id})"><i class="fa-solid fa-xmark"></i></button>` : ''}
+                    ${currentUser?.isAdmin ? `<button class="btn-delete-item" onclick="event.stopPropagation(); deleteMovie('${m.id}')"><i class="fa-solid fa-xmark"></i></button>` : ''}
                     <div onclick="playMovie('${m.title}', '${m.archiveUrl}', '${m.type}')">
                         <div class="${m.type === 'vip' ? 'movie-badge-vip' : 'movie-badge-free'}">${m.type === 'vip' ? '👑 VIP' : 'ھەقسىز'}</div>
                         <img src="${m.poster}" alt="${m.title}" oncontextmenu="return false;">
